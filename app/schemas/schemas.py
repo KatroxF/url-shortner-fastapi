@@ -1,15 +1,36 @@
 from pydantic import BaseModel,HttpUrl,Field
+from typing import Optional
+from datetime import datetime
 
 
 class UserCrete(BaseModel):
     username:str
     email:str
     password:str=Field(..., min_length=8, max_length=128)
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    created_at: datetime
 
 class URLCreate(BaseModel):
     original_url:HttpUrl
+    custom_code: Optional[str] = None
+
 class URLResponse(BaseModel):
-    id:int
-    original_url:str
-    short_code:str
-    short_url:str
+    id: int
+    original_url: str
+    short_code: str
+    short_url: str
+    click_count: int
+    created_at: datetime
+    expired_at: Optional[datetime]
+
+class ClickResponse(BaseModel):
+    id: int
+    url_id: int
+    timestamp: datetime
+    ip_address: Optional[str]
+    user_agent: Optional[str]
+class MessageResponse(BaseModel):
+    message: str
