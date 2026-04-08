@@ -20,6 +20,7 @@ class URLCreate(BaseModel):
 class URLResponse(BaseModel):
     id: int
     original_url: str
+    short_url: str
     short_code: str
     short_url: str
     click_count: int
@@ -33,4 +34,4 @@ class ClickResponse(BaseModel):
     ip_address: Optional[str]
     user_agent: Optional[str]
 class MessageResponse(BaseModel):
-    message: str
+    short_url: str
