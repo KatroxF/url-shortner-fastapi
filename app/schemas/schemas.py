@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 
-class UserCrete(BaseModel):
+class UserCreate(BaseModel):
     username:str
     email:str
     password:str=Field(..., min_length=8, max_length=128)
@@ -18,11 +18,9 @@ class URLCreate(BaseModel):
     custom_code: Optional[str] = None
 
 class URLResponse(BaseModel):
-    id: int
     original_url: str
     short_url: str
     short_code: str
-    short_url: str
     click_count: int
     created_at: datetime
     expired_at: Optional[datetime]
@@ -35,3 +33,5 @@ class ClickResponse(BaseModel):
     user_agent: Optional[str]
 class MessageResponse(BaseModel):
     short_url: str
+class Message(BaseModel):
+    message:str

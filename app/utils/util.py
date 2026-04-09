@@ -7,4 +7,4 @@ def encode(num:int):
     while num>0:
         result.append(BASE62[num%base])
         num//=base
-    return ".join(reversed(result))"   
+    return "".join(reversed(result))   
