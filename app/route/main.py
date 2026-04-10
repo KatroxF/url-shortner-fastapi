@@ -105,7 +105,7 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
     return RedirectResponse(url=url.original_url)
 
 @app.get("/urls",response_model=List[schemas.URLResponse])
-def get_url(current_user=Depends(get_current_user),db=Session=Depends(get_db),page=int=1,limit=10):
+def get_url(current_user:schemas.UserResponse,current_user=Depends(auth.get_current_user),db=Session=Depends(get_db),page=int=1,limit=10):
     urls=db.query(models.URL).filter(
         models.URL.user_id==current_user.id
     ).all()
