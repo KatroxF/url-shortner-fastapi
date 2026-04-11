@@ -32,7 +32,7 @@ def verify_access_token(token:str):
     try:
         claims=jwt.decode(token,SECRET_KEY)
         claims.validate()
-        return claims
+        return claims["user_id"]
     except JoseError:
         raise HTTPException(
         status_code=401,
