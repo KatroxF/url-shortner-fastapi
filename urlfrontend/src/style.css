@@ -1,0 +1,124 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+body {
+  background: #0b2a3c;
+  color: white;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 50px;
+  align-items: center;
+}
+
+.logo {
+  color: #ff6a00;
+  font-size: 28px;
+}
+
+.nav-buttons button {
+  margin-left: 10px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.login {
+  background: transparent;
+  color: white;
+  border: 1px solid white;
+}
+
+.signup {
+  background: white;
+  color: black;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.hero h1 {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  max-width: 600px;
+  margin: auto;
+  color: #cfd8dc;
+}
+
+/* Card */
+.card {
+  background: #123a52;
+  margin: 50px auto;
+  width: 600px;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  margin: 0 5px;
+}
+
+.active {
+  background: white;
+  color: black;
+}
+
+/* Content */
+.card-content {
+  background: #eaeaea;
+  color: black;
+  padding: 30px;
+  border-radius: 20px;
+}
+
+.card-content h2 {
+  margin-bottom: 5px;
+}
+
+.card-content p {
+  margin-bottom: 20px;
+  color: gray;
+}
+
+.card-content input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+/* CTA */
+.cta {
+  background: #0066ff;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
