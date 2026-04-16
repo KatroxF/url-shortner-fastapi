@@ -17,12 +17,12 @@ function Card() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          long_url: url   // 👈 send your state here
+          long_url: url   
         })
       });
 
       const data = await response.json();
-      setShortUrl(data.short_url); // 👈 store response
+      setShortUrl(data.short_url); 
 
     } catch (error) {
       console.error("Error:", error);
