@@ -8,7 +8,7 @@ from app.core.config import SECRET_KEY
 
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRY_MINUTES = 30
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 def create_access_token(data:dict):
     header={"alg":ALGORITHM}
@@ -24,7 +24,9 @@ def create_access_token(data:dict):
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-
+    if credentials is None:
+        return None
+     
     token = credentials.credentials
 
     return verify_access_token(token)

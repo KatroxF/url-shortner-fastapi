@@ -1,7 +1,7 @@
 from fastapi import FastAPI,Depends,HTTPException
-from schemas import schemas
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
+from typing import Optional
 
 from app.db.database import engine, SessionLocal, Base 
 from app.utils.util import encode
@@ -10,9 +10,19 @@ from app.schemas import schemas
 from typing import List
 from app.utils import security
 from app.utils import auth
+from app.utils.auth import get_current_user
+from fastapi.middleware.cors import CORSMiddleware
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db=SessionLocal()
@@ -72,18 +82,23 @@ def login(user:schemas.UserResponse,db:Session=Depends(get_db)):
     
 
 @app.post('/url',response_model=schemas.MessageResponse)
-def url(data:schemas.URLCreate,db:Session=Depends(get_db)):
+def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user),db:Session=Depends(get_db)):
     new_url=models.URL(
-        original_url=data.original_url,
+        original_url=str(data.original_url),
+        user_id=user_id
         
     )
     db.add(new_url)
-    db.commit()
-    db.refresh(new_url)
+    db.flush()
     short_code = encode(new_url.id)
     if data.custom_code:
         custom=data.custom_code.lower().replace(" ","-")
-        final_code=f"{custom}--{short_code}"
+        existing=db.query(models.URL).filter(
+            models.URL.short_code==custom
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Custom code already taken")
+        final_code = custom
     else:
         final_code=short_code
     new_url.short_code = final_code
@@ -101,6 +116,8 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
     if not url:
         raise HTTPException(status_code=404, detail="Invalid url")
+    url.click_count+=1
+    db.commit()
 
     return RedirectResponse(url=url.original_url)
 
