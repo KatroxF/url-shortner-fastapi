@@ -1,17 +1,15 @@
-import "./style.css";
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Card from "./components/Card";
-import "./index.css"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./Home";
+import Login from "./components/login";
 
-function App() {
-  return (
-    <>
-      <Navbar />
-      <Hero />
-      <Card />
-    </>
-  );
+function App(){
+  return(
+    <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Home/>}></Route>
+      <Route path="/login" element={<Login/>}></Route>
+      </Routes>
+      </BrowserRouter>
+  )
 }
-
 export default App;
