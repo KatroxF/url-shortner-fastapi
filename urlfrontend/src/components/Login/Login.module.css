@@ -1,0 +1,105 @@
+/* Full page container */
+.loginPage {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f5f6f8;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+}
+
+/* Wrapper */
+.wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Logo (top-left) */
+.logo {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+
+  font-size: 28px;
+  font-weight: 700;
+  color: #ff6a00;
+  letter-spacing: 1px;
+}
+
+/* Card */
+.card {
+  width: 380px;
+  background: #ffffff;
+  padding: 30px 28px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Heading */
+.card h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+/* Subtext */
+.subtext {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.subtext a {
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Labels */
+.card label {
+  display: block;
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  font-size: 14px;
+}
+
+.input:focus {
+  border-color: #6366f1;
+}
+
+/* Button */
+.btn {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+
+  background: linear-gradient(90deg, #5f5fff, #6a5acd);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}

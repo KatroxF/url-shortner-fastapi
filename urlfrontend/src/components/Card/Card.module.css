@@ -1,0 +1,75 @@
+.card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 80px;
+}
+
+.cardContent {
+  background: #d3d3d3;
+  padding: 40px;
+  border-radius: 20px;
+  width: 600px;
+  max-width: 90%;
+}
+
+/* Title */
+.cardTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 6px;
+}
+
+/* Subtitle */
+.cardSubtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* Input */
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: border 0.2s ease;
+}
+
+.input:focus {
+  border-color: #2acfcf;
+}
+
+/* Button */
+.cta {
+  background: #2563eb;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cta:hover {
+  background: #1d4ed8;
+}
+
+/* Result link */
+.resultLink {
+  display: block;
+  margin-top: 20px;
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.resultLink:hover {
+  text-decoration: underline;
+}

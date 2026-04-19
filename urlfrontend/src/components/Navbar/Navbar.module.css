@@ -1,0 +1,56 @@
+/* Navbar container */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background-color: #0b2a3c; /* dark background */
+}
+
+/* Logo */
+.logo {
+  font-weight: bold;
+  color: #ff6a00;
+  font-size: 28px;
+}
+
+/* Button container */
+.navButtons {
+  display: flex;
+  gap: 16px;
+}
+
+/* Login button */
+.login {
+background-color: #2acfcf;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-decoration: none;
+
+}
+
+.login:hover {
+  background-color: #9be3e2;
+}
+
+/* Signup button */
+.signup {
+  background-color: #2acfcf;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-decoration: none;
+}
+
+.signup:hover {
+  background-color: #9be3e2;
+}
