@@ -15,5 +15,5 @@ A full-stack URL shortener built with FastAPI, PostgreSQL, and React.
 - Others: JWT Auth, REST API
 
 ## Status
-🚧 Currently under development (adding signup,login system with analytics & dashboard)
+🚧 Currently under development (adding analytics & dashboard)
 
