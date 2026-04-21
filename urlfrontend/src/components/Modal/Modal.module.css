@@ -1,0 +1,147 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0,0,0,.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  backdrop-filter: blur(4px);
+}
+
+.modalOverlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  padding: 36px 32px;
+  width: 420px;
+  text-align: center;
+  transform: scale(.95);
+  transition: transform .2s;
+  box-shadow: 0 24px 80px rgba(0,0,0,.5);
+}
+
+.modalOverlay.show .modal {
+  transform: scale(1);
+}
+
+.modalIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(34,200,154,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.modalIcon svg {
+  stroke: #22c89a;
+}
+
+.modal h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.modal p {
+  font-size: 13px;
+  color: #8b90a8;
+  margin-bottom: 22px;
+}
+
+.shortUrlBox {
+  background: #1a1e2a;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.shortUrlText {
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 14px;
+  color: #5b7eff;
+  font-weight: 500;
+}
+
+.copyBtn {
+  background: #5b7eff;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+
+.copyBtn:hover {
+  background: #4a6cee;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btnGhost {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.12);
+  color: #8b90a8;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.btnGhost:hover {
+  background: #1a1e2a;
+  color: #e8eaf2;
+}
+
+.btnPrimary {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: #5b7eff;
+  color: #fff;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.btnPrimary:hover {
+  background: #4a6cee;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(91,126,255,.3);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}

@@ -1,0 +1,236 @@
+.page {
+  padding: 30px 32px;
+  animation: fadeIn .2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8b90a8;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: color .15s;
+}
+
+.backBtn:hover {
+  color: #e8eaf2;
+}
+
+.analyticsTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.linkInfoShort {
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: #5b7eff;
+}
+
+.linkInfoLong {
+  font-size: 12px;
+  color: #8b90a8;
+  margin-top: 4px;
+}
+
+.dateFilter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dateFilter label {
+  font-size: 12px;
+  color: #8b90a8;
+  white-space: nowrap;
+}
+
+.dateFilter input[type="date"] {
+  width: 150px;
+  padding: 8px 12px;
+  font-size: 12px;
+  background: #1a1e2a;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: #e8eaf2;
+  font-family: inherit;
+  outline: none;
+}
+
+.dateFilter input[type="date"]:focus {
+  border-color: #5b7eff;
+}
+
+.btnGhost {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.12);
+  color: #8b90a8;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.btnGhost:hover {
+  background: #1a1e2a;
+  color: #e8eaf2;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: #555a72;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 8px;
+}
+
+.metricValue {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -.5px;
+}
+
+.metricSmall {
+  font-size: 16px;
+}
+
+.card {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.cardSub {
+  font-size: 12px;
+  color: #8b90a8;
+  margin-bottom: 16px;
+}
+
+.chartWrap {
+  position: relative;
+  width: 100%;
+  height: 230px;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8b90a8;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.locTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.locTable th {
+  font-size: 11px;
+  color: #555a72;
+  text-align: left;
+  padding: 0 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.locTable td {
+  font-size: 13px;
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.locTable tr:last-child td {
+  border-bottom: none;
+}
+
+.locFlag {
+  font-size: 15px;
+  margin-right: 6px;
+}
+
+.locBarWrap {
+  width: 80px;
+  height: 5px;
+  background: #21263a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.locBar {
+  height: 100%;
+  background: #5b7eff;
+  border-radius: 3px;
+}
+
+.empty {
+  text-align: center;
+  padding: 20px;
+  color: #555a72;
+  font-size: 13px;
+}

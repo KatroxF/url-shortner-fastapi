@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Depends,HTTPException
+from fastapi import FastAPI,Depends,HTTPException,Request
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from typing import Optional
@@ -53,7 +53,7 @@ def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
     new_user=models.User(
         username=user.username,
         email=user.email,
-        hashed_passowrd=hashed
+        hashed_password=hashed
 
     )
     db.add(new_user)

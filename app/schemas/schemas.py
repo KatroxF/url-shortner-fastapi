@@ -1,16 +1,17 @@
-from pydantic import BaseModel,HttpUrl,Field
+from pydantic import BaseModel,HttpUrl,Field,EmailStr
 from typing import Optional
 from datetime import datetime
 
 
 class UserCreate(BaseModel):
     username:str
-    email:str
+    email:EmailStr
     password:str=Field(..., min_length=8, max_length=128)
 class UserResponse(BaseModel):
     id: int
     username: str
-    email: str
+    email: EmailStr
+    password:str
     created_at: datetime
 
 class URLCreate(BaseModel):

@@ -4,7 +4,22 @@ import styles from "./Card.module.css";
 function Card() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopied(true);
+
+      
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Copy failed", err);
+    }
+  };
+
+  
   const handleSubmit = async () => {
     if (!url) {
       alert("Please enter a URL");
@@ -30,6 +45,7 @@ function Card() {
       }
 
       setShortUrl(data.short_url);
+      setCopied(false); 
     } catch (error) {
       console.error("Error:", error);
     }
@@ -54,14 +70,20 @@ function Card() {
         </button>
 
         {shortUrl && (
-          <a
-            className={styles.resultLink}
-            href={shortUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {shortUrl}
-          </a>
+          <div className={styles.resultBox}>
+            <a
+              className={styles.resultLink}
+              href={shortUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {shortUrl}
+            </a>
+
+            <button className={styles.copyBtn} onClick={handleCopy}>
+              {copied ? "✅" : "📋"}
+            </button>
+          </div>
         )}
       </div>
     </div>

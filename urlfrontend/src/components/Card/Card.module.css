@@ -73,3 +73,16 @@
 .resultLink:hover {
   text-decoration: underline;
 }
+
+.copyBtn {
+  padding: 6px 10px;
+  border: none;
+  background: #2f6fed;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.copyBtn:hover {
+  background: #1e4fd1;
+}

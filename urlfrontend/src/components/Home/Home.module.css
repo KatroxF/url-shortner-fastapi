@@ -1,0 +1,239 @@
+.page {
+  padding: 30px 32px;
+  animation: fadeIn .2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pageHeader {
+  margin-bottom: 26px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.4px;
+  margin-bottom: 4px;
+}
+
+.pageSub {
+  font-size: 13px;
+  color: #8b90a8;
+}
+
+.shortenWrap {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.shortenRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.inputGroup {
+  flex: 1;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 11px;
+  color: #555a72;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 7px;
+}
+
+.inputGroup input {
+  background: #1a1e2a;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #e8eaf2;
+  width: 100%;
+  transition: border-color .15s;
+  outline: none;
+}
+
+.inputGroup input::placeholder {
+  color: #555a72;
+}
+
+.inputGroup input:focus {
+  border-color: #5b7eff;
+}
+
+.customGroup {
+  width: 180px;
+}
+
+.btnPrimary {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: #5b7eff;
+  color: #fff;
+  transition: all .15s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btnPrimary:hover {
+  background: #4a6cee;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(91,126,255,.3);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}
+
+.shortenHint {
+  font-size: 12px;
+  color: #555a72;
+  margin-top: 10px;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: #555a72;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 8px;
+}
+
+.metricValue {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -.5px;
+}
+
+.metricMono {
+  font-size: 17px;
+  font-family: 'DM Mono', 'Courier New', monospace;
+}
+
+.metricChange {
+  font-size: 11px;
+  margin-top: 6px;
+  color: #22c89a;
+}
+
+.metricChange.neutral {
+  color: #8b90a8;
+}
+
+.card {
+  background: #13161e;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.cardSub {
+  font-size: 12px;
+  color: #8b90a8;
+  margin-bottom: 16px;
+}
+
+.activityList {
+  /* container for activity rows */
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.activityRow:last-child {
+  border-bottom: none;
+}
+
+.activityDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5b7eff;
+  flex-shrink: 0;
+}
+
+.activityShort {
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 13px;
+  color: #5b7eff;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.activityShort:hover {
+  text-decoration: underline;
+}
+
+.activityLong {
+  font-size: 12px;
+  color: #8b90a8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.activityMeta {
+  font-size: 11px;
+  color: #555a72;
+  white-space: nowrap;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #555a72;
+  font-size: 13px;
+}

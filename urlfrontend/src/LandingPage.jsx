@@ -5,7 +5,7 @@ import Card from "./components/Card/Card";
 import Login from "./components/Login/Login";
 import "./index.css"
 
-function Home() {
+function LandingPage() {
   return (
     <>
       <Navbar />
@@ -15,4 +15,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default LandingPage;
