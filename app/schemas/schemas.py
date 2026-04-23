@@ -7,12 +7,10 @@ class UserCreate(BaseModel):
     username:str
     email:EmailStr
     password:str=Field(..., min_length=8, max_length=128)
-class UserResponse(BaseModel):
-    id: int
-    username: str
+class UserLogin(BaseModel):
     email: EmailStr
     password:str
-    created_at: datetime
+    
 
 class URLCreate(BaseModel):
     original_url:HttpUrl

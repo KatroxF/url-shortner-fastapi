@@ -7,23 +7,57 @@ export default function Home({ onShorten, onViewAnalytics }) {
   const [stats, setStats] = useState({
     totalLinks: 0,
     totalClicks: 0,
-    topLink: '—'
+    topLink: 'â€”'
   });
   const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
-    // TODO: Replace with your API call to fetch dashboard stats
-    // Example:
-    // fetch('YOUR_API_ENDPOINT/stats')
-    //   .then(res => res.json())
-    //   .then(data => setStats(data));
+    const fetchDashboardStats = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://127.0.0.1:8000/urls', {
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`
+              }
+            : {}
+        });
 
-    // Placeholder for demonstration
-    setStats({
-      totalLinks: 0,
-      totalClicks: 0,
-      topLink: '—'
-    });
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard stats');
+        }
+
+        const urls = await response.json();
+        
+let topLink = null;
+if (urls.length > 0) {
+  topLink = urls[0]; 
+
+  for (let i = 1; i < urls.length; i++) {
+    if (urls[i].click_count > topLink.click_count) {
+      topLink = urls[i];
+    }
+  }
+}       
+let totalClicks=0;
+for(const url in urls){
+  totalClicks+=url.click_count||0;
+}
+        setStats({
+          totalLinks: urls.length,
+          totalClicks: totalClicks,
+          topLink: topLink?.short_code || 'â€”'
+        });
+      } catch {
+        setStats({
+          totalLinks: 0,
+          totalClicks: 0,
+          topLink: 'â€”'
+        });
+      }
+    };
+
+    fetchDashboardStats();
 
     // TODO: Replace with your API call to fetch recent activity
     // fetch('YOUR_API_ENDPOINT/recent')
@@ -34,7 +68,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
   }, []);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault();  //keeps react app running no referesh
 
     if (!longUrl.trim()) {
       alert('Please enter a URL');
@@ -127,7 +161,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
                   {activity.long}
                 </span>
                 <span className={styles.activityMeta}>
-                  {activity.clicks} clicks · {activity.created}
+                  {activity.clicks} clicks Â· {activity.created}
                 </span>
               </div>
             ))

@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import styles from "./Login.module.css";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -49,6 +51,9 @@ function Login() {
       // ✅ Success
       console.log("Login success", data);
       setError("");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
 
     } catch (err) {
       console.error("Error:", err);

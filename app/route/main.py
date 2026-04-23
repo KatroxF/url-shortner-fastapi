@@ -64,7 +64,7 @@ def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
     }
 
 @app.post("/login")
-def login(user:schemas.UserResponse,db:Session=Depends(get_db)):
+def login(user:schemas.UserLogin,db:Session=Depends(get_db)):
     db_user=db.query(models.User).filter(
         models.User.email==user.email
     ).first()

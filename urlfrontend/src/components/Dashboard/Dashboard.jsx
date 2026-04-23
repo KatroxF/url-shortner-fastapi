@@ -21,11 +21,34 @@ export default function Dashboard() {
     setActivePage('analytics');
   };
 
-  const handleShorten = (longUrl, customCode) => {
-    const code = customCode || Math.random().toString(36).substring(2, 7);
-    setShortUrl(`lnk.ly/${code}`);
+ const handleShorten = async (longUrl, customCode) => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    const res = await fetch("http://127.0.0.1:8000/url", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify({
+        original_url: longUrl,
+        custom_code: customCode
+      })
+    });
+
+    const data = await res.json();
+
+    // backend should return something like: { short_url: "lnk.ly/abc123" }
+
+    setShortUrl(data.short_url);
     setShowModal(true);
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to shorten URL");
+  }
+};
 
   const closeModal = () => {
     setShowModal(false);
