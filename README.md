@@ -7,7 +7,7 @@ A full-stack URL shortener built with FastAPI, PostgreSQL, and React.
 - Custom short codes
 - Redirect system
 - Click tracking
-- Optional user authentication
+- user authentication
 
 ## Tech Stack
 - Backend: FastAPI, SQLAlchemy, PostgreSQL
