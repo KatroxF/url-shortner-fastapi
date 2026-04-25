@@ -40,7 +40,7 @@ if (urls.length > 0) {
   }
 }       
 let totalClicks=0;
-for(const url in urls){
+for(const url of urls){
   totalClicks+=url.click_count||0;
 }
         setStats({

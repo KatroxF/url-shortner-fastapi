@@ -47,9 +47,7 @@ function Login() {
         setError(errorMessage);
         return;
       }
-
-      // ✅ Success
-      console.log("Login success", data);
+      localStorage.setItem("access_token", data.access_token);
       setError("");
       setTimeout(() => {
         navigate("/dashboard");

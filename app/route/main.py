@@ -18,7 +18,7 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -89,7 +89,7 @@ def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user
         
     )
     db.add(new_url)
-    db.flush()
+    db.flush()  #sent req to db without commiting
     short_code = encode(new_url.id)
     if data.custom_code:
         custom=data.custom_code.lower().replace(" ","-")
@@ -107,6 +107,22 @@ def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user
     return {
         "short_url": f"http://localhost:8000/{final_code}"
     }
+@app.get('/urls',response_model=List[schemas.URLResponse])
+def get_url(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db),page:int=1,limit:int=10):
+    urls=db.query(models.URL).filter(
+        models.URL.user_id==current_user
+    ).all()
+    return[{
+        "original_url": url.original_url,
+        "short_url": f"http://localhost:8000/{url.short_code}",
+        "short_code": url.short_code,
+        "click_count": url.click_count,
+        "created_at": url.created_at,
+        "expired_at": url.expired_at,
+    }
+    for url in urls
+
+    ]
 @app.get("/{short_code}")
 def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
@@ -121,22 +137,7 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
     return RedirectResponse(url=url.original_url)
 
-@app.get("/urls",response_model=List[schemas.URLResponse])
-def get_url(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db),page:int=1,limit=10):
-    urls=db.query(models.URL).filter(
-        models.URL.user_id==current_user.id
-    ).all()
-    return[{
-        "original_url": url.original_url,
-        "short_url": url.short_url,
-        "short_code": url.short_code,
-        "click_count": url.click_count,
-        "created_at": url.created_at,
-        "expired_at": url.expired_at,
-    }
-    for url in urls
 
-    ]
         
 
     
