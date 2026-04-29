@@ -202,6 +202,7 @@
   flex-shrink: 0;
 }
 
+/* Changed from span to <a> tag — keeps same visual style */
 .activityShort {
   font-family: 'DM Mono', 'Courier New', monospace;
   font-size: 13px;
@@ -209,6 +210,7 @@
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
+  text-decoration: none; /* remove default <a> underline */
 }
 
 .activityShort:hover {
@@ -223,6 +225,15 @@
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+  cursor: pointer;
+  transition: color .15s;
+}
+
+.activityLong:hover {
+  color: #c8cadc;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(200, 202, 220, 0.4);
 }
 
 .activityMeta {
@@ -230,6 +241,26 @@
   color: #555a72;
   white-space: nowrap;
 }
+
+/* Copy button */
+.copyBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555a72;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+
+.copyBtn:hover {
+  color: #e8eaf2;
+  background: rgba(255,255,255,.07);
+}
+
 
 .empty {
   text-align: center;

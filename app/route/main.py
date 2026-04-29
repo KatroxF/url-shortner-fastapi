@@ -18,7 +18,7 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -123,6 +123,20 @@ def get_url(current_user=Depends(auth.get_current_user),db:Session=Depends(get_d
     for url in urls
 
     ]
+@app.get('/urls/recent',response_model=List[schemas.URLStatsResponse])
+def get_recent_urls(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db)):
+    urls=db.query(models.URL).filter(
+        models.URL.user_id==current_user
+    ).order_by(models.URL.created_at.desc()).limit(5).all()
+    return[{
+        "id": url.id,
+        "short": url.short_code,
+        "long": url.original_url,
+        "clicks": url.click_count or 0,
+        "created": url.created_at.strftime("%Y-%m-%d")
+    }
+    for url in urls]
+
 @app.get("/{short_code}")
 def redirect_url(short_code: str, db: Session = Depends(get_db)):
 

@@ -10,6 +10,7 @@ class User(Base):
     email=Column(String, unique=True, index=True, nullable=False)  
     hashed_password=Column(String, nullable=False)
     created_at=Column(DateTime(timezone=True), server_default=func.now())
+    urls=relationship("URL", back_populates="user")
 
 class URL(Base):
     __tablename__ = "urls"
@@ -21,6 +22,8 @@ class URL(Base):
     created_at= Column(DateTime(timezone=True), server_default=func.now())
     expired_at=Column(DateTime, nullable=True)
     click_count=Column(Integer, default=0)
+    user=relationship("User", back_populates="urls")
+    clicks=relationship("Clicks", back_populates="url",cascade="all, delete-orphan")
 class Clicks(Base):
     __tablename__="clicks"
     id=Column(Integer, primary_key=True, index=True)
@@ -28,6 +31,7 @@ class Clicks(Base):
     timestamp=Column(DateTime(timezone=True), server_default=func.now())
     ip_address=Column(String, nullable=True)
     user_agent = Column(String, nullable=True)
+    url=relationship("URL", back_populates="clicks")
 
     
     

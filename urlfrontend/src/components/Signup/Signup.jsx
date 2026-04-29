@@ -3,14 +3,14 @@ import styles from "./Signup.module.css";
 import { useState } from "react";
 
 function Signup() {
-  const [username, setUsername] = useState("");   // ✅ added
+  const [username, setUsername] = useState("");   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const navigate = useNavigate(); // ✅ for redirect
+  const navigate = useNavigate();  
 
   const handleSignup = async () => {
     if (!username || !email || !password) {
@@ -25,7 +25,7 @@ function Signup() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: username,   // ✅ FIXED
+          username: username,   
           email: email,
           password: password,
         }),

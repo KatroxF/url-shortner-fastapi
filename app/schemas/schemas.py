@@ -24,6 +24,13 @@ class URLResponse(BaseModel):
     created_at: datetime
     expired_at: Optional[datetime]
 
+class URLStatsResponse(BaseModel):
+    id: int
+    short: str
+    long: str
+    clicks: int
+    created: str
+
 class ClickResponse(BaseModel):
     id: int
     url_id: int
