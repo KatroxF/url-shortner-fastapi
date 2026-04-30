@@ -25,7 +25,7 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     if credentials is None:
-        return None
+        raise HTTPException(status_code=401, detail="Not authenticated")
      
     token = credentials.credentials
 

@@ -161,7 +161,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
               <div key={activity.id} className={styles.activityRow}>
                 <div className={styles.activityDot}></div>
 
-                {/* Short link → opens the actual website in a new tab */}
+                
                 <a
                   className={styles.activityShort}
                   href={`http://localhost:8000/${activity.short}`}
@@ -172,7 +172,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
                   http://localhost:8000/{activity.short}
                 </a>
 
-                {/* Long URL → opens analytics section */}
+                
                 <span
                   className={styles.activityLong}
                   title={`${activity.long} — click to view analytics`}
@@ -185,7 +185,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
                   {activity.clicks} clicks · {activity.created}
                 </span>
 
-                {/* Copy full short URL button */}
+                
                 <button
                   className={styles.copyBtn}
                   onClick={() => handleCopy(activity.short, activity.id)}

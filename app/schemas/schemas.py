@@ -23,6 +23,9 @@ class URLResponse(BaseModel):
     click_count: int
     created_at: datetime
     expired_at: Optional[datetime]
+class UserResponse(BaseModel):
+    id: int
+    username: str
 
 class URLStatsResponse(BaseModel):
     id: int

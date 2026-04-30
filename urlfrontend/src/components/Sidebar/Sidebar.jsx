@@ -1,6 +1,38 @@
+import { useEffect, useState } from 'react';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
+  const[name, setName] = useState("Unknown");
+  const getInitials = (name) => {
+    if (!name) return "NA";
+
+    const words = name.trim().split(" ");
+
+    if (words.length === 1) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
+
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
+  useEffect(() => {
+    const fetchname = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await fetch("http://localhost:8000/me", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setName(data.username);
+      } catch (error) {
+        console.error("Error fetching user name:", error);
+      }
+    };
+
+    fetchname();
+  }, []);
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
@@ -52,9 +84,11 @@ export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
       </nav>
 
       <div className={styles.sidebarFooter}>
-        <div className={styles.avatar}>RS</div>
+        <div className={styles.avatar}>
+          {getInitials(name)}
+        </div>
         <div>
-          <div className={styles.userName}>Rahul Singh</div>
+          <div className={styles.userName}>{name}</div>
           <div className={styles.userPlan}>Free plan</div>
         </div>
       </div>

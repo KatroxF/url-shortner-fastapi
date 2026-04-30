@@ -80,7 +80,12 @@ def login(user:schemas.UserLogin,db:Session=Depends(get_db)):
 
     }
     
-
+@app.get('/me',response_model=schemas.UserResponse)
+def read_me(current_user_id:int=Depends(get_current_user),db:Session=Depends(get_db)):
+    user=db.query(models.User).filter(models.User.id==current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=404,detail="User not found")
+    return user
 @app.post('/url',response_model=schemas.MessageResponse)
 def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user),db:Session=Depends(get_db)):
     new_url=models.URL(
