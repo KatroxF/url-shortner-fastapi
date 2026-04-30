@@ -1,5 +1,5 @@
 from pydantic import BaseModel,HttpUrl,Field,EmailStr
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -44,3 +44,22 @@ class MessageResponse(BaseModel):
     short_url: str
 class Message(BaseModel):
     message:str
+
+class LinkInfo(BaseModel):
+    original_url: str
+    short_url: str
+class Stats(BaseModel):
+    total_clicks:int
+    unique_visitors:int
+    peak_Day:datetime
+class ClickData(BaseModel):
+    labels: List[str]
+    days: List[int]
+class LocationItem(BaseModel):
+    country: str
+    state: str
+    clicks: int
+    flag: str
+class DateRange(BaseModel):
+    pass
+    

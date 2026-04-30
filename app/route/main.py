@@ -142,6 +142,11 @@ def get_recent_urls(current_user=Depends(auth.get_current_user),db:Session=Depen
     }
     for url in urls]
 
+@app.get("/analytics/{short_code}",response_model=schemas.URLStatsResponse)
+def get_url_analytics():
+    # Implement logic to fetch analytics for the given short code
+    pass
+
 @app.get("/{short_code}")
 def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
