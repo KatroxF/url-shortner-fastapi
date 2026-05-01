@@ -1,7 +1,8 @@
-from fastapi import FastAPI,Depends,HTTPException,Request
+from fastapi import FastAPI,Depends,HTTPException,Request,Response
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from typing import Optional
+from datetime import timedelta
 
 from app.db.database import engine, SessionLocal, Base 
 from app.utils.util import encode
@@ -12,6 +13,8 @@ from app.utils import security
 from app.utils import auth
 from app.utils.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import func
+import uuid
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
@@ -143,12 +146,47 @@ def get_recent_urls(current_user=Depends(auth.get_current_user),db:Session=Depen
     for url in urls]
 
 @app.get("/analytics/{short_code}",response_model=schemas.URLStatsResponse)
-def get_url_analytics():
-    # Implement logic to fetch analytics for the given short code
-    pass
+def get_url_analytics(short_code: str, db:Session=Depends(get_db)):
+    url=db.query(models.URL).filter(models.URL.short_code==short_code).first()
+    if not url:
+        raise HTTPException(status_code=404,detail="URL not found")
+    total_clicks=db.query(func.count(models.Clicks.id)).filter(models.Clicks.url_id==url.id).scalar() or 0
+    unique_visitors=db.query(func.count(func.distinct(models.Clicks.visitor_id))
+                             ).filter(models.Clicks.url_id==url.id).scalar() or 0
+    peak_day_result=db.query(
+        func.date(models.Clicks.timestamp).label("day"),
+        func.count(models.Clicks.id).label("clicks")
+    ).filter(models.Clicks.url_id==url.id).group_by(func.date(models.Clicks.timestamp)).order_by(func.count(models.Clicks.id).desc()).first()
+    peak_day=peak_day_result.day if peak_day_result else None
+    clicks_data=db.query(
+        func.date(models.Clicks.timestamp).label("day"),
+        func.count(models.Clicks.id).label("clicks")
+    ).filter(
+        models.Clicks.url_id==url.id,
+        models.Clicks.timestamp>=start_date,
+        models.Clicks.timestamp<=end_date
+    ).group_by(func.date(models.Clicks.timestamp)).order_by(func.date(models.Clicks.timestamp)).all()
+    data_dict={row.day:row.clicks for row in clicks_data}
+    current=start_date.date()
+    end=end_date.date()
+    labels=[]
+    clicks=[]
+    while current <= end:
+        labels.append(current.strftime("%b %d"))
+        clicks.append(data_dict.get(current, 0))  #
+        current += timedelta(days=1)
+
+    return {
+        "totalClicks": total_clicks,
+        "uniqueVisitors": unique_visitors,
+        "peakDay": peak_day,
+        "shortCode": url.short_code,
+        "originalUrl": url.original_url
+    }
+   
 
 @app.get("/{short_code}")
-def redirect_url(short_code: str, db: Session = Depends(get_db)):
+def redirect_url(short_code: str,request: Request,response: Response,db: Session = Depends(get_db)):
 
     url = db.query(models.URL).filter(
         models.URL.short_code == short_code
@@ -156,10 +194,45 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
     if not url:
         raise HTTPException(status_code=404, detail="Invalid url")
-    url.click_count+=1
+
+    
+    visitor_id = request.cookies.get("visitor_id")
+    new_visitor = False
+
+    if not visitor_id:
+        visitor_id = str(uuid.uuid4())
+        new_visitor = True
+
+    
+    ip = request.client.host
+
+    click = models.Clicks(
+        url_id=url.id,
+        ip_address=ip,
+        visitor_id=visitor_id,
+    )
+    db.add(click)
+
+    
+    url.click_count += 1
+
     db.commit()
 
-    return RedirectResponse(url=url.original_url)
+   
+    redirect_response = RedirectResponse(url=url.original_url)
+
+
+    if new_visitor:
+        redirect_response.set_cookie(
+            key="visitor_id",
+            value=visitor_id,
+            httponly=True,
+            max_age=365*24*60*60
+        )
+
+    return redirect_response
+
+    
 
 
         

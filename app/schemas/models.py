@@ -30,7 +30,11 @@ class Clicks(Base):
     url_id=Column(Integer,ForeignKey("urls.id"),nullable=True)
     timestamp=Column(DateTime(timezone=True), server_default=func.now())
     ip_address=Column(String, nullable=True)
-    user_agent = Column(String, nullable=True)
+    visitor_id = Column(String, index=True)
+    user_agent = Column(String)
+    country = Column(String)
+    region = Column(String)
+    city = Column(String)
     url=relationship("URL", back_populates="clicks")
 
     
