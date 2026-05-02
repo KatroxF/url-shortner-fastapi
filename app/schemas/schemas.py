@@ -48,18 +48,22 @@ class Message(BaseModel):
 class LinkInfo(BaseModel):
     original_url: str
     short_url: str
-class Stats(BaseModel):
-    total_clicks:int
-    unique_visitors:int
-    peak_Day:datetime
-class ClickData(BaseModel):
-    labels: List[str]
-    days: List[int]
+
+
 class LocationItem(BaseModel):
     country: str
     state: str
     clicks: int
     flag: str
-class DateRange(BaseModel):
-    pass
+class URLAnalyticsResponse(BaseModel):
+    LinkInfo: LinkInfo
+    LocationItems: List[LocationItem]
+    totalClicks: int
+    uniqueVisitors: int
+    peakDay: Optional[datetime]
+    shortCode: str
+    originalUrl: str
+    labels: List[str]
+    clicks: List[int]
+    
     

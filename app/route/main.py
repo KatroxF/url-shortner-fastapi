@@ -1,8 +1,9 @@
-from fastapi import FastAPI,Depends,HTTPException,Request,Response
+from fastapi import FastAPI,Depends,HTTPException,Request,Response,Query
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from typing import Optional
 from datetime import timedelta
+from datetime import datetime
 
 from app.db.database import engine, SessionLocal, Base 
 from app.utils.util import encode
@@ -145,9 +146,13 @@ def get_recent_urls(current_user=Depends(auth.get_current_user),db:Session=Depen
     }
     for url in urls]
 
-@app.get("/analytics/{short_code}",response_model=schemas.URLStatsResponse)
-def get_url_analytics(short_code: str, db:Session=Depends(get_db)):
-    url=db.query(models.URL).filter(models.URL.short_code==short_code).first()
+@app.get("/analytics/{short_code}",response_model=schemas.URLAnalyticsResponse)
+def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date: datetime=Query(None),current_user=Depends(auth.get_current_user),db:Session=Depends(get_db)):
+    if not start_date or not end_date:
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=30)
+    
+    url=db.query(models.URL).filter(models.URL.short_code==short_code,models.URL.user_id==current_user).first()
     if not url:
         raise HTTPException(status_code=404,detail="URL not found")
     total_clicks=db.query(func.count(models.Clicks.id)).filter(models.Clicks.url_id==url.id).scalar() or 0
@@ -172,8 +177,8 @@ def get_url_analytics(short_code: str, db:Session=Depends(get_db)):
     labels=[]
     clicks=[]
     while current <= end:
-        labels.append(current.strftime("%b %d"))
-        clicks.append(data_dict.get(current, 0))  #
+        labels.append(current.strftime("%d %b"))  #strft=string format time 
+        clicks.append(data_dict.get(current, 0))  
         current += timedelta(days=1)
 
     return {
@@ -181,7 +186,9 @@ def get_url_analytics(short_code: str, db:Session=Depends(get_db)):
         "uniqueVisitors": unique_visitors,
         "peakDay": peak_day,
         "shortCode": url.short_code,
-        "originalUrl": url.original_url
+        "originalUrl": url.original_url,
+        "labels": labels,
+        "clicks": clicks
     }
    
 

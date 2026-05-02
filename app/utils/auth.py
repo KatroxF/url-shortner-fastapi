@@ -30,12 +30,19 @@ def get_current_user(
     token = credentials.credentials
 
     return verify_access_token(token)
-def verify_access_token(token:str):
+def verify_access_token(token: str):
     try:
-        claims=jwt.decode(token,SECRET_KEY)
+        claims = jwt.decode(token, SECRET_KEY)
         claims.validate()
-        return claims["user_id"]
+
+        user_id = claims.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+
+        return user_id
+
     except JoseError:
         raise HTTPException(
-        status_code=401,
-        detail="Invalid or expired token")
+            status_code=401,
+            detail="Invalid or expired token"
+        )
