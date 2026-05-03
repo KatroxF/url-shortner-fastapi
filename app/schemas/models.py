@@ -32,6 +32,7 @@ class Clicks(Base):
     ip_address=Column(String, nullable=True)
     visitor_id = Column(String, index=True)
     user_agent = Column(String)
+    device_os=Column(String)
     country = Column(String)
     region = Column(String)
     city = Column(String)

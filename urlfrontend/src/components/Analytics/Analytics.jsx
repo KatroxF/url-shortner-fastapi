@@ -198,8 +198,8 @@ export default function Analytics({ linkId, onBack }) {
 
       <div className={styles.twoCol}>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>Devices</div>
-          <div className={styles.cardSub}>Visitors by device type</div>
+          <div className={styles.cardTitle}>Devices & Platforms</div>
+          <div className={styles.cardSub}>Visitors by device and OS</div>
           <div className={styles.legend}>
             <div className={styles.legendItem}>
               <span className={styles.legendDot} style={{ background: '#5b7eff' }}></span>Desktop

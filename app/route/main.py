@@ -16,6 +16,7 @@ from app.utils.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 import uuid
+from user_agents import parse
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
@@ -180,6 +181,18 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
         labels.append(current.strftime("%d %b"))  #strft=string format time 
         clicks.append(data_dict.get(current, 0))  
         current += timedelta(days=1)
+    device_data=db.query(
+        models.Clicks.device_os,
+        func.count(models.Clicks.id).label("clicks")
+    ).filter(models.Clicks.url_id==url.id,models.Clicks.timestamp >= start_date,
+    models.Clicks.timestamp <= end_date).group_by(models.Clicks.device_os).all()
+    device_stats=[{
+        "name":device or "Unknown",
+        "value":clicks
+    }
+    for device, clicks in device_data
+        
+    ]
 
     return {
         "totalClicks": total_clicks,
@@ -188,7 +201,8 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
         "shortCode": url.short_code,
         "originalUrl": url.original_url,
         "labels": labels,
-        "clicks": clicks
+        "clicks": clicks,
+
     }
    
 
@@ -212,11 +226,30 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
 
     
     ip = request.client.host
+    ua_string=request.headers.get("user-agent", "")
+    ua=parse(ua_string) #convert string to user agent object
+    if ua.is_pc:
+        device_type="PC"
+    elif ua.is_mobile:
+        if ua.os.family == "Android":
+            device_type = "Android"
+        elif ua.os.family in ["iOS", "iPhone"]:
+            device_type = "iPhone"
+        else:
+            device_type = "Unknown"
+    elif ua.is_tablet:
+        device_type = "Tablet"
+    else:
+        device_type = "Unknown"
+       
+    
 
     click = models.Clicks(
         url_id=url.id,
         ip_address=ip,
         visitor_id=visitor_id,
+        device_os=device_type,
+        user_agent=ua_string 
     )
     db.add(click)
 
