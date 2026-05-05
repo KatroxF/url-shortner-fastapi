@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from typing import Optional
 from datetime import timedelta
-from datetime import datetime
+from datetime import datetime,timezone
 
 from app.db.database import engine, SessionLocal, Base 
 from app.utils.util import encode
@@ -194,16 +194,42 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
     for device, clicks in device_data
         
     ]
+    location_data = db.query(
+    models.Clicks.country,
+    models.Clicks.city,
+    func.count(models.Clicks.id).label("clicks")
+).filter(
+    models.Clicks.url_id == url.id,
+    models.Clicks.timestamp >= start_date,
+    models.Clicks.timestamp <= end_date
+).group_by(
+    models.Clicks.country,
+    models.Clicks.city,
+).all()
+    location_item=[]
+    for row in location_data:
+        location_item.append({
+        "location": f"{row.country} - {row.city}" if row.city else row.country or "Unknown",
+        "total_clicks_location": row.clicks,
+        
+    })
+    
+    
+    
 
     return {
         "totalClicks": total_clicks,
         "uniqueVisitors": unique_visitors,
+        "linkInfo":{
+            "original_url": url.original_url,
+            "short_url": f"http://localhost:8000/{url.short_code}"
+        },
         "peakDay": peak_day,
-        "shortCode": url.short_code,
-        "originalUrl": url.original_url,
         "labels": labels,
         "clicks": clicks,
-        "deviceStats": device_stats
+        "deviceStats": device_stats,
+        "locationStats": location_item
+       
 
     }
    
@@ -266,7 +292,7 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
         device_os=device_type,
         user_agent=ua_string ,
         country=country,
-        city=city
+        region=city
 
     )
     db.add(click)

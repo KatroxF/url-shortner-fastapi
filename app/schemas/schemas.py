@@ -48,22 +48,22 @@ class Message(BaseModel):
 class LinkInfo(BaseModel):
     original_url: str
     short_url: str
+class DeviceStat(BaseModel):
+    name: str
+    value: int
 
 
 class LocationItem(BaseModel):
-    country: str
-    state: str
-    clicks: int
-    flag: str
+    location:str
+    total_clicks_location: int
 class URLAnalyticsResponse(BaseModel):
-    LinkInfo: LinkInfo
-    LocationItems: List[LocationItem]
+    linkInfo: LinkInfo
+    locationStats: List[LocationItem]
     totalClicks: int
     uniqueVisitors: int
     peakDay: Optional[datetime]
-    shortCode: str
-    originalUrl: str
     labels: List[str]
     clicks: List[int]
+    deviceStats: List[DeviceStat]
     
     

@@ -34,7 +34,7 @@ class Clicks(Base):
     user_agent = Column(String)
     device_os=Column(String)
     country = Column(String)
-    region = Column(String)
+    country_code = Column(String)
     city = Column(String)
     url=relationship("URL", back_populates="clicks")
 
