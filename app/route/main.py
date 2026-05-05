@@ -16,6 +16,7 @@ from app.utils.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 import uuid
+import requests
 from user_agents import parse
 app=FastAPI()
 
@@ -202,6 +203,7 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
         "originalUrl": url.original_url,
         "labels": labels,
         "clicks": clicks,
+        "deviceStats": device_stats
 
     }
    
@@ -225,8 +227,21 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
         new_visitor = True
 
     
-    ip = request.client.host
+    x_forwarded_for=x_forwarded_for=request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        ip=x_forwarded_for.split(",")[0]
+    else:
+        ip=request.client.host
+    def get_location(ip:str):
+        try:
+            res=requests.get(f"https://ipapi.co/{ip}/json/")
+            data=res.json()
+            return data.get("country_name"), data.get("city")
+        except:
+            pass
+        return None,None
     ua_string=request.headers.get("user-agent", "")
+    country,city=(get_location(ip))
     ua=parse(ua_string) #convert string to user agent object
     if ua.is_pc:
         device_type="PC"
@@ -249,7 +264,10 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
         ip_address=ip,
         visitor_id=visitor_id,
         device_os=device_type,
-        user_agent=ua_string 
+        user_agent=ua_string ,
+        country=country,
+        city=city
+
     )
     db.add(click)
 
