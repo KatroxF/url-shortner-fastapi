@@ -218,15 +218,21 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
     
 
     return {
-        "totalClicks": total_clicks,
-        "uniqueVisitors": unique_visitors,
+        
+        "stats": {
+            "total_clicks": total_clicks,
+            "unique_visitors": unique_visitors,
+            "peak_day": peak_day
+        },
         "linkInfo":{
             "original_url": url.original_url,
             "short_url": f"http://localhost:8000/{url.short_code}"
         },
-        "peakDay": peak_day,
-        "labels": labels,
-        "clicks": clicks,
+        
+        clicks_data: {
+            "labels": labels,
+            "clicks": clicks
+        },
         "deviceStats": device_stats,
         "locationStats": location_item
        

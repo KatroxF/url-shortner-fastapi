@@ -51,6 +51,13 @@ class LinkInfo(BaseModel):
 class DeviceStat(BaseModel):
     name: str
     value: int
+class Stats(BaseModel):
+    total_clicks: int
+    unique_visitors: int
+    peak_day: Optional[str]
+class Click_data(BaseModel):
+    labels: List[str]
+    clicks: List[int]
 
 
 class LocationItem(BaseModel):
@@ -59,9 +66,10 @@ class LocationItem(BaseModel):
 class URLAnalyticsResponse(BaseModel):
     linkInfo: LinkInfo
     locationStats: List[LocationItem]
-    totalClicks: int
-    uniqueVisitors: int
-    peakDay: Optional[datetime]
+    stats: Stats
+    
+    
+    
     labels: List[str]
     clicks: List[int]
     deviceStats: List[DeviceStat]
