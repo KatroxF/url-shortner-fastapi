@@ -176,7 +176,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
                 <span
                   className={styles.activityLong}
                   title={`${activity.long} — click to view analytics`}
-                  onClick={() => onViewAnalytics(activity.id)}
+                  onClick={() => onViewAnalytics(activity.short)}
                 >
                   {activity.long}
                 </span>

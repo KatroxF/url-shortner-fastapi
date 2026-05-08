@@ -222,17 +222,15 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
         "stats": {
             "total_clicks": total_clicks,
             "unique_visitors": unique_visitors,
-            "peak_day": peak_day
+            "peak_day": peak_day.isoformat() if peak_day else None
         },
         "linkInfo":{
             "original_url": url.original_url,
             "short_url": f"http://localhost:8000/{url.short_code}"
         },
         
-        clicks_data: {
-            "labels": labels,
-            "clicks": clicks
-        },
+        "labels": labels,
+        "clicks": clicks,
         "deviceStats": device_stats,
         "locationStats": location_item
        
@@ -298,7 +296,7 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
         device_os=device_type,
         user_agent=ua_string ,
         country=country,
-        region=city
+        city=city
 
     )
     db.add(click)

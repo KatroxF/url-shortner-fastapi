@@ -35,44 +35,99 @@ export default function Analytics({ linkId, onBack }) {
   const [deviceData, setDeviceData] = useState({});
   const [locationData, setLocationData] = useState([]);
 
+  const updateAnalyticsState = (data, selectedFrom = dateFrom, selectedTo = dateTo) => {
+    const shortUrl = data.linkInfo?.short_url || '';
+    const short = shortUrl.split('/').pop() || linkId;
+    const devices = {};
+
+    for (const item of data.deviceStats || []) {
+      devices[item.name] = item.value;
+    }
+
+    setLinkInfo({
+      short,
+      long: data.linkInfo?.original_url || ''
+    });
+    setStats({
+      totalClicks: data.stats?.total_clicks || 0,
+      uniqueVisitors: data.stats?.unique_visitors || 0,
+      peakDay: data.stats?.peak_day || '-'
+    });
+    setClickData({
+      labels: data.labels || data.clicks_data?.labels || [],
+      days: data.clicks || data.clicks_data?.clicks || []
+    });
+    setDeviceData(devices);
+    setLocationData((data.locationStats || []).map((item) => {
+      const [country, state = ''] = (item.location || 'Unknown').split(' - ');
+
+      return {
+        flag: '',
+        country,
+        state,
+        clicks: item.total_clicks_location || 0
+      };
+    }));
+    setDateFrom(data.dateRange?.from || selectedFrom);
+    setDateTo(data.dateRange?.to || selectedTo);
+  };
+
   useEffect(() => {
     if (!linkId) return;
 
-    // TODO: Replace with your API call to fetch link analytics
-    // Example:
-    // fetch(`YOUR_API_ENDPOINT/analytics/${linkId}`)
-    //   .then(res => res.json())
-    //   .then(data => {
-    //     setLinkInfo(data.linkInfo);
-    //     setStats(data.stats);
-    //     setClickData(data.clickData);
-    //     setDeviceData(data.deviceData);
-    //     setLocationData(data.locationData);
-    //     setDateFrom(data.dateRange.from);
-    //     setDateTo(data.dateRange.to);
-    //   });
+    const fetchAnalytics = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`http://127.0.0.1:8000/analytics/${linkId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
 
-    // Placeholder for demonstration
-    setLinkInfo({ short: 'example', long: 'https://example.com' });
-    setStats({ totalClicks: 0, uniqueVisitors: 0, peakDay: '—' });
-    setClickData({ labels: [], days: [] });
-    setDeviceData({ Desktop: 0, Android: 0, iPhone: 0, Unknown: 0 });
-    setLocationData([]);
-    setDateFrom('2025-03-22');
-    setDateTo('2025-04-20');
+        if (!response.ok) throw new Error('Failed to fetch link analytics');
+
+        const data = await response.json();
+        updateAnalyticsState(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchAnalytics();
   }, [linkId]);
 
-  const handleDateChange = () => {
-    // TODO: Fetch updated data based on new date range
-    // fetch(`YOUR_API_ENDPOINT/analytics/${linkId}?from=${dateFrom}&to=${dateTo}`)
-    //   .then(res => res.json())
-    //   .then(data => { ... });
+  const handleDateChange = async (from = dateFrom, to = dateTo) => {
+    if (!linkId) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const params = new URLSearchParams();
+
+      if (from) params.set('start_date', `${from}T00:00:00`);
+      if (to) params.set('end_date', `${to}T23:59:59`);
+
+      const query = params.toString();
+      const response = await fetch(
+        `http://127.0.0.1:8000/analytics/${linkId}${query ? `?${query}` : ''}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to fetch link analytics');
+
+      const data = await response.json();
+      updateAnalyticsState(data, from, to);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const resetDates = () => {
-    setDateFrom('2025-03-22');
-    setDateTo('2025-04-20');
-    handleDateChange();
+    const defaultFrom = '2025-03-22';
+    const defaultTo = '2025-04-20';
+
+    setDateFrom(defaultFrom);
+    setDateTo(defaultTo);
+    handleDateChange(defaultFrom, defaultTo);
   };
 
   const chartOptions = {
@@ -115,18 +170,41 @@ export default function Analytics({ linkId, onBack }) {
     }]
   };
 
-  const totalDevices = Object.values(deviceData).reduce((sum, val) => sum + val, 0);
-  const doughnutData = {
-    labels: Object.keys(deviceData).map(
-      key => `${key} ${totalDevices > 0 ? Math.round(deviceData[key] / totalDevices * 100) : 0}%`
-    ),
-    datasets: [{
-      data: Object.values(deviceData),
-      backgroundColor: ['#5b7eff', '#22c89a', '#ff5c7a', '#555a72'],
-      borderWidth: 0,
-      hoverOffset: 8
-    }]
-  };
+  let totalDevices = 0;
+  for (let value of Object.values(deviceData)) {
+    totalDevices += value;
+  }
+  const labels = [];
+
+for (let key of Object.keys(deviceData)) {
+
+  const count = deviceData[key];
+
+  const percentage = totalDevices > 0
+    ? Math.round((count / totalDevices) * 100)
+    : 0;
+
+  labels.push(`${key} ${percentage}%`);
+}
+
+const doughnutData = {
+  labels: labels,
+
+  datasets: [{
+    data: Object.values(deviceData),
+
+    backgroundColor: [
+      '#5b7eff',
+      '#22c89a',
+      '#ff5c7a',
+      '#555a72'
+    ],
+
+    borderWidth: 0,
+
+    hoverOffset: 8
+  }]
+};
 
   const doughnutOptions = {
     responsive: true,
@@ -166,9 +244,25 @@ export default function Analytics({ linkId, onBack }) {
         </div>
         <div className={styles.dateFilter}>
           <label>From</label>
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              const nextFrom = e.target.value;
+              setDateFrom(nextFrom);
+              handleDateChange(nextFrom, dateTo);
+            }}
+          />
           <label>to</label>
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              const nextTo = e.target.value;
+              setDateTo(nextTo);
+              handleDateChange(dateFrom, nextTo);
+            }}
+          />
           <button className={styles.btnGhost} onClick={resetDates}>Reset</button>
         </div>
       </div>

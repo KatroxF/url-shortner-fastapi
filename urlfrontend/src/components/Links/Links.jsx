@@ -90,7 +90,7 @@ export default function Links({ onViewAnalytics }) {
                   <td>
                     <span
                       className={styles.shortLink}
-                      onClick={() => onViewAnalytics(link.id)}
+                      onClick={() => onViewAnalytics(link.short)}
                     >
                       lnk.ly/{link.short}
                     </span>
@@ -109,7 +109,7 @@ export default function Links({ onViewAnalytics }) {
                   <td style={{ textAlign: 'right' }}>
                     <button
                       className={`${styles.btnGhost} ${styles.btnSm}`}
-                      onClick={() => onViewAnalytics(link.id)}
+                      onClick={() => onViewAnalytics(link.short)}
                     >
                       Analytics →
                     </button>
