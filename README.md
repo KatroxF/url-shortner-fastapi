@@ -73,12 +73,11 @@ Each shortened URL provides analytics including:
 
 ### Home Dashboard
 
-![Home Dashboard](./screenshots/home.png)
+![Home Dashboard](./screenshots/Home.png)
 
 ### Analytics Dashboard
 
-![Analytics Dashboard](./screenshots/analytics.png)
-
+![Analytics Dashboard](./screenshots/Analytics.png)
 ---
 
 ## ⚙️ Installation
