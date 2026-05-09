@@ -1,6 +1,6 @@
 # URL Shortener 🚀
 
-A full-stack URL shortener built with FastAPI, PostgreSQL, and React.
+A full-stack URL shortener built with FastAPI, PostgreSQL, and React featuring authentication and analytics tracking.
 
 ---
 
@@ -10,25 +10,28 @@ A full-stack URL shortener built with FastAPI, PostgreSQL, and React.
 - ✍️ Custom short codes
 - ⚡ Fast redirect system
 - 🔐 JWT-based authentication
-- 📊 Advanced analytics system
+- 📊 Analytics dashboard
 - 👥 Unique visitor tracking
 - 👆 Total click tracking
-- 🌍 User location tracking
+- 🌍 Visitor location tracking
 - 💻 Device & OS detection
+- 📅 Date range filtering
 - 📡 REST API integration
 
 ---
 
 ## 📊 Analytics Features
 
-Each shortened URL provides detailed analytics including:
+Each shortened URL provides analytics including:
 
 - Total clicks
 - Unique visitors
-- Visitor country/city
-- Device information
-- Operating system used
-- Click activity insights
+- Peak traffic day
+- Daily click insights
+- Device & platform distribution
+- Visitor country/state tracking
+
+> ⚠️ Demo/sample analytics data is used in dashboard previews for showcase purposes.
 
 ---
 
@@ -42,7 +45,7 @@ Each shortened URL provides detailed analytics including:
 ### Frontend
 - React
 
-### Other Tools & Technologies
+### Other Technologies
 - JWT Authentication
 - REST API
 - Analytics Tracking System
@@ -54,26 +57,70 @@ Each shortened URL provides detailed analytics including:
 - ✅ URL shortening system completed
 - ✅ Authentication system completed
 - ✅ Analytics system implemented
-- 🔄 Currently working on analytics dashboard & data visualization
+- ✅ Analytics dashboard completed
 
 ---
 
 ## 📌 Upcoming Features
 
-- 📈 Interactive analytics charts
-- 📱 QR code generation
 - ⏳ Link expiration support
 - 🚦 Rate limiting
-- 🧑‍💻 Improved user dashboard
-- 📤 Export analytics reports
+- ⚡ Redis caching
 
 ---
 
 ## 📷 Preview
 
-> Screenshots and demo will be added soon.
+### Home Dashboard
+
+![Home Dashboard](./screenshots/home.png)
+
+### Analytics Dashboard
+
+![Analytics Dashboard](./screenshots/analytics.png)
 
 ---
 
+## ⚙️ Installation
 
+### Clone Repository
 
+```bash
+git clone https://github.com/your-username/url-shortener.git
+cd url-shortener
+```
+
+### Backend Setup
+
+```bash
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+
+# Windows
+venv\Scripts\activate
+
+# Linux / Mac
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run backend server
+uvicorn app.main:app --reload
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
