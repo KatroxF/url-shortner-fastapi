@@ -104,14 +104,9 @@ def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user
     short_code = encode(new_url.id)
     if data.custom_code:
         custom=data.custom_code.lower().replace(" ","-")
-        existing=db.query(models.URL).filter(
-            models.URL.short_code==custom
-        ).first()
-        if existing:
-            raise HTTPException(status_code=400, detail="Custom code already taken")
-        final_code = custom
+        final_code = f"{custom}-{short_code}"
     else:
-        final_code=short_code
+        final_code = short_code
     new_url.short_code = final_code
     db.commit()
     db.refresh(new_url)
