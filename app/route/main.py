@@ -18,6 +18,8 @@ from sqlalchemy import func
 import uuid
 import requests
 from user_agents import parse
+from app.db.redis import redis_client
+from app.service.task import save_click_analytics
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
@@ -235,15 +237,17 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
 
 @app.get("/{short_code}")
 def redirect_url(short_code: str,request: Request,response: Response,db: Session = Depends(get_db)):
-
-    url = db.query(models.URL).filter(
+    cached_url=redis_client.get(f"url:{short_code}")
+    url=db.query(models.URL).filter(
         models.URL.short_code == short_code
     ).first()
-
     if not url:
         raise HTTPException(status_code=404, detail="Invalid url")
-
-    
+    if cached_url:
+        original_url=cached_url
+    else:
+        original_url=url.original_url
+        redis_client.set(f"url:{short_code}", original_url, ex=3600)
     visitor_id = request.cookies.get("visitor_id")
     new_visitor = False
 
@@ -252,57 +256,16 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
         new_visitor = True
 
     
-    x_forwarded_for=x_forwarded_for=request.headers.get("x-forwarded-for")
+    x_forwarded_for=request.headers.get("x-forwarded-for")
     if x_forwarded_for:
         ip=x_forwarded_for.split(",")[0]
     else:
         ip=request.client.host
-    def get_location(ip:str):
-        try:
-            res=requests.get(f"https://ipapi.co/{ip}/json/")
-            data=res.json()
-            return data.get("country_name"), data.get("city")
-        except:
-            pass
-        return None,None
     ua_string=request.headers.get("user-agent", "")
-    country,city=(get_location(ip))
-    ua=parse(ua_string) #convert string to user agent object
-    if ua.is_pc:
-        device_type="PC"
-    elif ua.is_mobile:
-        if ua.os.family == "Android":
-            device_type = "Android"
-        elif ua.os.family in ["iOS", "iPhone"]:
-            device_type = "iPhone"
-        else:
-            device_type = "Unknown"
-    elif ua.is_tablet:
-        device_type = "Tablet"
-    else:
-        device_type = "Unknown"
-       
+    save_click_analytics.delay(url.id, ip, visitor_id, ua_string)
     
-
-    click = models.Clicks(
-        url_id=url.id,
-        ip_address=ip,
-        visitor_id=visitor_id,
-        device_os=device_type,
-        user_agent=ua_string ,
-        country=country,
-        city=city
-
-    )
-    db.add(click)
-
-    
-    url.click_count += 1
-
-    db.commit()
-
    
-    redirect_response = RedirectResponse(url=url.original_url)
+    redirect_response = RedirectResponse(url=original_url)
 
 
     if new_visitor:
@@ -315,6 +278,16 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
 
     return redirect_response
 
+        
+
+        
+
+    
+
+    
+
+    
+   
     
 
 
