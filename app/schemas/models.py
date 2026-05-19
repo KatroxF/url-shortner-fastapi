@@ -36,6 +36,7 @@ class Clicks(Base):
     country = Column(String)
     country_code = Column(String)
     city = Column(String)
+    referrer = Column(String)
     url=relationship("URL", back_populates="clicks")
 
     

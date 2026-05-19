@@ -6,7 +6,7 @@ from app.schemas import models
 
 
 @celery_app.task
-def save_click_analytics(url_id, ip, visitor_id, ua_string):
+def save_click_analytics(url_id, ip, visitor_id, ua_string,referrer):
     db = SessionLocal()
     try:
         country = None
@@ -21,6 +21,7 @@ def save_click_analytics(url_id, ip, visitor_id, ua_string):
             pass
 
         ua = parse(ua_string) #convert string to user agent object
+        
         if ua.is_pc:
             device_type = "PC"
         elif ua.is_mobile:
@@ -41,7 +42,8 @@ def save_click_analytics(url_id, ip, visitor_id, ua_string):
             user_agent=ua_string,
             device_os=device_type,
             country=country,
-            city=city
+            city=city,
+            referrer=referrer
         )
         db.add(clicks)
         url=db.query(models.URL).filter(models.URL.id == url_id).first()

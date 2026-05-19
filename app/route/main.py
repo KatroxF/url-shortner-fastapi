@@ -18,6 +18,7 @@ from sqlalchemy import func
 import uuid
 import requests
 from user_agents import parse
+from urllib.parse import urlparse
 from app.db.redis import redis_client
 from app.service.task import save_click_analytics
 app=FastAPI()
@@ -257,12 +258,16 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
 
     
     x_forwarded_for=request.headers.get("x-forwarded-for")
+    raw_referrer=request.headers.get("referer")
+    referrer=None
+    if raw_referrer:
+        referrrer=urlparse(raw_referrer).netloc
     if x_forwarded_for:
         ip=x_forwarded_for.split(",")[0]
     else:
         ip=request.client.host
     ua_string=request.headers.get("user-agent", "")
-    save_click_analytics.delay(url.id, ip, visitor_id, ua_string)
+    save_click_analytics.delay(url.id, ip, visitor_id, ua_string,referrer)
     
    
     redirect_response = RedirectResponse(url=original_url)
