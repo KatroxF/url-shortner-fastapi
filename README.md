@@ -1,6 +1,6 @@
 # URL Shortener 🚀
 
-A full-stack URL shortener built with FastAPI, PostgreSQL, and React featuring authentication and analytics tracking.
+A scalable full-stack URL shortener built with FastAPI, PostgreSQL, React, Redis, and Celery featuring authentication, analytics tracking, caching, and asynchronous background processing.
 
 ---
 
@@ -8,14 +8,15 @@ A full-stack URL shortener built with FastAPI, PostgreSQL, and React featuring a
 
 - 🔗 Shorten long URLs
 - ✍️ Custom short codes
-- ⚡ Fast redirect system
+- ⚡ High-speed redirect system with Redis caching
 - 🔐 JWT-based authentication
-- 📊 Analytics dashboard
+- 📊 Real-time analytics dashboard
 - 👥 Unique visitor tracking
 - 👆 Total click tracking
 - 🌍 Visitor location tracking
 - 💻 Device & OS detection
-- 📅 Date range filtering
+- 📅 Date-wise analytics filtering
+- ⚙️ Background analytics processing using Celery
 - 📡 REST API integration
 
 ---
@@ -30,8 +31,18 @@ Each shortened URL provides analytics including:
 - Daily click insights
 - Device & platform distribution
 - Visitor country/state tracking
+- Traffic activity trends
 
-> ⚠️ Demo/sample analytics data is used in dashboard previews for showcase purposes.
+> ⚠️ Demo/sample analytics data may be used in dashboard previews for showcase purposes.
+
+---
+
+## ⚡ Performance & Scalability
+
+- Implemented Redis caching for faster URL retrieval and reduced database load
+- Integrated Celery + Redis background workers for asynchronous analytics processing
+- Optimized redirect performance for handling concurrent traffic efficiently
+- Separated analytics processing from request-response cycle to improve response time
 
 ---
 
@@ -41,14 +52,18 @@ Each shortened URL provides analytics including:
 - FastAPI
 - SQLAlchemy
 - PostgreSQL
+- Redis
+- Celery
 
 ### Frontend
 - React
 
 ### Other Technologies
 - JWT Authentication
-- REST API
+- REST APIs
+- Background Task Queue
 - Analytics Tracking System
+- Docker (Optional)
 
 ---
 
@@ -58,14 +73,18 @@ Each shortened URL provides analytics including:
 - ✅ Authentication system completed
 - ✅ Analytics system implemented
 - ✅ Analytics dashboard completed
+- ✅ Redis caching integrated
+- ✅ Celery background workers integrated
 
 ---
 
 ## 📌 Upcoming Features
 
 - ⏳ Link expiration support
-- 🚦 Rate limiting
-- ⚡ Redis caching
+- 🚦 API rate limiting
+- 📈 Advanced traffic visualization
+- 🔔 Suspicious traffic detection
+- ☁️ Cloud deployment
 
 ---
 
@@ -78,6 +97,7 @@ Each shortened URL provides analytics including:
 ### Analytics Dashboard
 
 ![Analytics Dashboard](./screenshots/Analytics.png)
+
 ---
 
 ## ⚙️ Installation
@@ -89,7 +109,9 @@ git clone https://github.com/your-username/url-shortener.git
 cd url-shortener
 ```
 
-### Backend Setup
+---
+
+## Backend Setup
 
 ```bash
 cd backend
@@ -107,12 +129,29 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+```
 
-# Run backend server
+### Start Redis Server
+
+```bash
+docker run -d -p 6379:6379 redis
+```
+
+### Start Celery Worker
+
+```bash
+celery -A app.services.tasks worker -l info
+```
+
+### Run Backend Server
+
+```bash
 uvicorn app.main:app --reload
 ```
 
-### Frontend Setup
+---
+
+## Frontend Setup
 
 ```bash
 cd frontend
@@ -123,3 +162,19 @@ npm install
 # Start development server
 npm run dev
 ```
+
+---
+
+## 📡 API Features
+
+- User authentication APIs
+- URL shortening APIs
+- Redirect handling APIs
+- Analytics APIs
+- Visitor tracking APIs
+
+---
+
+## 📄 License
+
+This project is open-source and available under the MIT License.
