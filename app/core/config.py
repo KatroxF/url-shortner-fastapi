@@ -7,3 +7,4 @@ load_dotenv(os.path.join(BASE_DIR,".env"))
 
 SQLALCHEMY_DATABASE_URL=os.getenv("SQLALCHEMY_DATABASE_URL")
 SECRET_KEY=os.getenv("SECRET_KEY")
+GROQ_API_KEY=os.getenv("GROQ_API_KEY")
