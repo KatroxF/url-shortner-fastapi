@@ -1,4 +1,4 @@
-import redis
+from redis.asyncio import redis
 
 redis_client = redis.Redis(
     host="localhost",

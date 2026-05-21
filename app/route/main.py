@@ -21,6 +21,7 @@ from user_agents import parse
 from urllib.parse import urlparse
 from app.db.redis import redis_client
 from app.service.task import save_click_analytics
+import json
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
@@ -237,18 +238,38 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
    
 
 @app.get("/{short_code}")
-def redirect_url(short_code: str,request: Request,response: Response,db: Session = Depends(get_db)):
-    cached_url=redis_client.get(f"url:{short_code}")
-    url=db.query(models.URL).filter(
-        models.URL.short_code == short_code
-    ).first()
-    if not url:
-        raise HTTPException(status_code=404, detail="Invalid url")
-    if cached_url:
-        original_url=cached_url
+async def redirect_url(short_code: str,request: Request,response: Response,db: Session = Depends(get_db)):
+    cached_data=await redis_client.get(f"url:{short_code}")
+    if cached_data:
+        data=json.loads(cached_data)  #json string to dict
+        original_url=data["original_url"]
+        url_id=data["id"]
     else:
-        original_url=url.original_url
-        redis_client.set(f"url:{short_code}", original_url, ex=3600)
+        url = db.query(models.URL).filter(
+            models.URL.short_code == short_code
+        ).first()
+
+        if not url:
+            raise HTTPException(
+                status_code=404,
+                detail="Invalid url"
+            )
+
+        original_url = url.original_url
+        url_id = url.id
+        await redis_client.set(
+            f"url:{short_code}",
+            json.dumps({
+                "id": url.id,
+                "original_url": url.original_url
+            }),
+            ex=3600
+        )
+    
+
+
+        
+  
     visitor_id = request.cookies.get("visitor_id")
     new_visitor = False
 
@@ -261,13 +282,13 @@ def redirect_url(short_code: str,request: Request,response: Response,db: Session
     raw_referrer=request.headers.get("referer")
     referrer=None
     if raw_referrer:
-        referrrer=urlparse(raw_referrer).netloc
+        referrer=urlparse(raw_referrer).netloc
     if x_forwarded_for:
         ip=x_forwarded_for.split(",")[0]
     else:
         ip=request.client.host
     ua_string=request.headers.get("user-agent", "")
-    save_click_analytics.delay(url.id, ip, visitor_id, ua_string,referrer)
+    save_click_analytics.delay(url_id, ip, visitor_id, ua_string,referrer)
     
    
     redirect_response = RedirectResponse(url=original_url)
