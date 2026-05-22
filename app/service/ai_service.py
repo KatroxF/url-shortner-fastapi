@@ -13,11 +13,13 @@ def ask_ai(prompt:str):
         messages=[
             {
                 "role": "user",
-                "content": prompt
+                "content":(
+                "You are an analytics expert. "
+                "Analyze URL analytics and provide short, clear insights.")
             }
         ],
 
-        temperature=0.7,
-        max_completion_tokens=1024
+        temperature=0.3,
+        max_completion_tokens=300
     )
     return completion.choices[0].message.content

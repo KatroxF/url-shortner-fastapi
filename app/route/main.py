@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 from app.db.redis import redis_client
 from app.service.task import save_click_analytics
 import json
+from app.service.ai_service import ask_ai
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
@@ -303,6 +304,120 @@ async def redirect_url(short_code: str,request: Request,response: Response,db: S
         )
 
     return redirect_response
+
+@app.get("/summary/{short_code}")
+def get_summary(
+    short_code: str,
+    current_user=Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    url = (
+        db.query(models.URL)
+        .filter(
+            models.URL.short_code == short_code,
+            models.URL.user_id == current_user.id
+        )
+        .first()
+    )
+
+    if not url:
+        raise HTTPException(
+            status_code=404,
+            detail="URL not found"
+        )
+
+    total_clicks = (
+        db.query(func.count(models.Clicks.id))
+        .filter(models.Clicks.url_id == url.id)
+        .scalar()
+    ) or 0
+
+    unique_visitors = (
+        db.query(
+            func.count(
+                func.distinct(models.Clicks.visitor_id)
+            )
+        )
+        .filter(models.Clicks.url_id == url.id)
+        .scalar()
+    ) or 0
+
+    referrers = (
+        db.query(
+            models.Clicks.referrer,
+            func.count(models.Clicks.id).label("count")
+        )
+        .filter(models.Clicks.url_id == url.id)
+        .group_by(models.Clicks.referrer)
+        .order_by(func.count(models.Clicks.id).desc())
+        .limit(5)
+        .all()
+    )
+
+    top_countries = (
+        db.query(
+            models.Clicks.country,
+            func.count(models.Clicks.id).label("count")
+        )
+        .filter(models.Clicks.url_id == url.id)
+        .group_by(models.Clicks.country)
+        .order_by(func.count(models.Clicks.id).desc())
+        .limit(5)
+        .all()
+    )
+
+    peak_hours = (
+        db.query(
+            func.extract(
+                'hour',
+                models.Clicks.timestamp
+            ).label("hour"),
+
+            func.count().label("count")
+        )
+        .filter(models.Clicks.url_id == url.id)
+        .group_by("hour")
+        .order_by(func.count().desc())
+        .all()
+    )
+
+    analytics_data={
+        "total_clicks": total_clicks,
+        "unique_visitors": unique_visitors,
+        "top_referrers": dict(referrers),
+        "top_countries": dict(top_countries),
+        "peak_hours": peak_hours
+    }
+    prompt = f"""
+    Analyze this URL analytics data.
+
+    Provide:
+    - Traffic insights
+    - Audience behavior
+    - Peak engagement observations
+    - Short recommendations
+
+    Analytics Data:
+    {analytics_data}
+    """
+    ai_summary = ask_ai(prompt)
+    return {
+    "ai_summary": ai_summary
+}
+
+    
+                
+
+    
+    
+                                                                      
+    
+                                                                      
+                        
+    
+
+    
 
         
 
