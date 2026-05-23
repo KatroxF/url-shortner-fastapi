@@ -3,6 +3,14 @@
 A scalable full-stack URL shortener built with FastAPI, PostgreSQL, React, Redis, and Celery featuring authentication, analytics tracking, caching, and asynchronous background processing.
 
 ---
+## 🧠 System Design Overview
+
+1. User creates a shortened URL
+2. FastAPI stores URL in PostgreSQL
+3. Redis caches frequently accessed URLs
+4. Redirect requests first check Redis cache
+5. Analytics events are processed asynchronously using Celery
+6. Dashboard fetches aggregated analytics data
 
 ## ✨ Features
 
@@ -242,8 +250,6 @@ url-shortener/
 ---
 
 ## 🚀 Future Improvements
-
-- AI-powered analytics summaries
 - QR code generation for shortened URLs
 
 ---
