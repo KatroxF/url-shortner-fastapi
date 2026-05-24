@@ -316,7 +316,7 @@ def get_summary(
         db.query(models.URL)
         .filter(
             models.URL.short_code == short_code,
-            models.URL.user_id == current_user.id
+            models.URL.user_id == current_user
         )
         .first()
     )
@@ -403,8 +403,8 @@ def get_summary(
     """
     ai_summary = ask_ai(prompt)
     return {
-    "ai_summary": ai_summary
-}
+        "ai_summary": ai_summary
+    }
 
     
                 

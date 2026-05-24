@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,6 +35,12 @@ export default function Analytics({ linkId, onBack }) {
   const [deviceData, setDeviceData] = useState({});
   const [locationData, setLocationData] = useState([]);
 
+  // AI Summary state
+  const [aiSummary, setAiSummary] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const aiFetchedRef = useRef('');
+
   const updateAnalyticsState = (data, selectedFrom = dateFrom, selectedTo = dateTo) => {
     const shortUrl = data.linkInfo?.short_url || '';
     const short = shortUrl.split('/').pop() || linkId;
@@ -60,7 +66,6 @@ export default function Analytics({ linkId, onBack }) {
     setDeviceData(devices);
     setLocationData((data.locationStats || []).map((item) => {
       const [country, state = ''] = (item.location || 'Unknown').split(' - ');
-
       return {
         flag: '',
         country,
@@ -72,6 +77,7 @@ export default function Analytics({ linkId, onBack }) {
     setDateTo(data.dateRange?.to || selectedTo);
   };
 
+  // Fetch main analytics
   useEffect(() => {
     if (!linkId) return;
 
@@ -93,6 +99,32 @@ export default function Analytics({ linkId, onBack }) {
 
     fetchAnalytics();
   }, [linkId]);
+
+  // Fetch AI summary once on load
+  useEffect(() => {
+    if (!linkId || aiFetchedRef.current === linkId) return;
+    aiFetchedRef.current = linkId;
+    fetchAiSummary();
+  }, [linkId]);
+
+  const fetchAiSummary = async () => {
+    setAiLoading(true);
+    setAiError('');
+    setAiSummary('');
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://127.0.0.1:8000/summary/${linkId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (!response.ok) throw new Error('Failed to fetch summary');
+      const data = await response.json();
+      setAiSummary(data.ai_summary || '');
+    } catch (err) {
+      setAiError('Could not load AI summary. Try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleDateChange = async (from = dateFrom, to = dateTo) => {
     if (!linkId) return;
@@ -174,37 +206,25 @@ export default function Analytics({ linkId, onBack }) {
   for (let value of Object.values(deviceData)) {
     totalDevices += value;
   }
+
   const labels = [];
+  for (let key of Object.keys(deviceData)) {
+    const count = deviceData[key];
+    const percentage = totalDevices > 0
+      ? Math.round((count / totalDevices) * 100)
+      : 0;
+    labels.push(`${key} ${percentage}%`);
+  }
 
-for (let key of Object.keys(deviceData)) {
-
-  const count = deviceData[key];
-
-  const percentage = totalDevices > 0
-    ? Math.round((count / totalDevices) * 100)
-    : 0;
-
-  labels.push(`${key} ${percentage}%`);
-}
-
-const doughnutData = {
-  labels: labels,
-
-  datasets: [{
-    data: Object.values(deviceData),
-
-    backgroundColor: [
-      '#5b7eff',
-      '#22c89a',
-      '#ff5c7a',
-      '#555a72'
-    ],
-
-    borderWidth: 0,
-
-    hoverOffset: 8
-  }]
-};
+  const doughnutData = {
+    labels: labels,
+    datasets: [{
+      data: Object.values(deviceData),
+      backgroundColor: ['#5b7eff', '#22c89a', '#ff5c7a', '#555a72'],
+      borderWidth: 0,
+      hoverOffset: 8
+    }]
+  };
 
   const doughnutOptions = {
     responsive: true,
@@ -267,6 +287,7 @@ const doughnutData = {
         </div>
       </div>
 
+      {/* Metric Cards */}
       <div className={styles.metricGrid}>
         <div className={styles.metric}>
           <div className={styles.metricLabel}>Total clicks</div>
@@ -282,6 +303,68 @@ const doughnutData = {
         </div>
       </div>
 
+      {/* ── AI SUMMARY CARD ── */}
+      <div className={styles.aiCard}>
+        <div className={styles.aiHeader}>
+          <div className={styles.aiIconWrap} aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 2L14.5 9.5H22L16 14L18.5 21.5L12 17L5.5 21.5L8 14L2 9.5H9.5Z"/>
+            </svg>
+          </div>
+          <div>
+            <div className={styles.aiTitle}>AI Summary</div>
+            <div className={styles.aiSubtitle}>Insights generated from your link analytics</div>
+          </div>
+          <button
+            className={styles.aiRefreshBtn}
+            onClick={fetchAiSummary}
+            disabled={aiLoading}
+            aria-label="Refresh AI summary"
+          >
+            <svg
+              width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2"
+              style={{ animation: aiLoading ? 'aiSpin 1s linear infinite' : 'none' }}
+            >
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
+            {aiLoading ? 'Generating…' : 'Refresh'}
+          </button>
+        </div>
+
+        <div className={styles.aiBody}>
+          {aiLoading && (
+            <div className={styles.aiSkeleton}>
+              <div className={styles.skeletonLine} style={{ width: '92%' }} />
+              <div className={styles.skeletonLine} style={{ width: '78%' }} />
+              <div className={styles.skeletonLine} style={{ width: '85%' }} />
+              <div className={styles.skeletonLine} style={{ width: '55%' }} />
+            </div>
+          )}
+          {!aiLoading && aiError && (
+            <div className={styles.aiError}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              {aiError}
+              <button className={styles.aiRetryBtn} onClick={fetchAiSummary}>Retry</button>
+            </div>
+          )}
+          {!aiLoading && !aiError && aiSummary && (
+            <p className={styles.aiText}>{aiSummary}</p>
+          )}
+          {!aiLoading && !aiError && !aiSummary && (
+            <p className={styles.aiEmpty}>No summary available yet.</p>
+          )}
+        </div>
+      </div>
+      {/* ── END AI SUMMARY CARD ── */}
+
+      {/* Clicks Over Time */}
       <div className={styles.card}>
         <div className={styles.cardTitle}>Clicks over time</div>
         <div className={styles.cardSub}>Daily click volume for the selected date range</div>

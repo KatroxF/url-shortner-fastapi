@@ -234,3 +234,150 @@
   color: #555a72;
   font-size: 13px;
 }
+/* ── Paste these at the bottom of your Analytics.module.css ── */
+
+@keyframes aiSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes aiShimmer {
+  0%   { opacity: 0.35; }
+  50%  { opacity: 0.75; }
+  100% { opacity: 0.35; }
+}
+
+.aiCard {
+  border-radius: 14px;
+  border: 1px solid rgba(91, 126, 255, 0.28);
+  background: rgba(91, 126, 255, 0.05);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.aiCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(91,126,255,0.6) 0%, rgba(34,200,154,0.4) 60%, transparent 100%);
+  pointer-events: none;
+}
+
+.aiHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.aiIconWrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #5b7eff 0%, #22c89a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.aiTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e8eaf2;
+  letter-spacing: 0.1px;
+}
+
+.aiSubtitle {
+  font-size: 11px;
+  color: #555a72;
+  margin-top: 2px;
+}
+
+.aiRefreshBtn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 500;
+  color: #8b90a8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.aiRefreshBtn:hover:not(:disabled) {
+  background: rgba(91, 126, 255, 0.12);
+  border-color: rgba(91, 126, 255, 0.35);
+  color: #e8eaf2;
+}
+
+.aiRefreshBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aiBody {
+  padding-left: 42px;
+}
+
+.aiText {
+  font-size: 13px;
+  color: #c4c7d6;
+  line-height: 1.75;
+  margin: 0;
+}
+
+.aiEmpty {
+  font-size: 13px;
+  color: #555a72;
+  margin: 0;
+  font-style: italic;
+}
+
+.aiError {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #ff5c7a;
+}
+
+.aiRetryBtn {
+  background: transparent;
+  border: none;
+  color: #5b7eff;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.aiSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeletonLine {
+  height: 11px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  animation: aiShimmer 1.5s ease-in-out infinite;
+}

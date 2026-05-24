@@ -12,10 +12,22 @@ def ask_ai(prompt:str):
 
         messages=[
             {
+                "role": "system",
+                "content": (
+                    "You are an analytics assistant for a URL shortener app."
+                    "Generate short and simple traffic insights from analytics data."
+                    "Output rules:"
+                    "1.  Use plain English"
+                    "2. Maximum 5 bullet points."
+                    "3. One sentence per bullet."
+                    "4. No tables, No headings,No technical jargon,Keep it human and easy to read"
+                     
+
+                )
+            },
+            {
                 "role": "user",
-                "content":(
-                "You are an analytics expert. "
-                "Analyze URL analytics and provide short, clear insights.")
+                "content": prompt
             }
         ],
 
