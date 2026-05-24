@@ -7,14 +7,30 @@ export default function Links({ onViewAnalytics }) {
   const [sortBy, setSortBy] = useState('clicks');
 
   useEffect(() => {
-    // TODO: Replace with your API call to fetch all links
-    // Example:
-    // fetch('YOUR_API_ENDPOINT/links')
-    //   .then(res => res.json())
-    //   .then(data => setLinks(data));
+    const fetchLinks = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://127.0.0.1:8000/links', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
 
-    // Placeholder for demonstration
-    setLinks([]);
+        if (!response.ok) throw new Error('Failed to fetch links');
+
+        const data = await response.json();
+        setLinks(data.map((link) => ({
+          id: link.id ?? link.short_url,
+          short: link.short_url,
+          long: link.original_url,
+          created: link.created_at ? new Date(link.created_at).toISOString().slice(0, 10) : '',
+          clicks: link.click_count || 0
+        })));
+      } catch (error) {
+        console.error(error);
+        setLinks([]);
+      }
+    };
+
+    fetchLinks();
   }, []);
 
   const getSortedLinks = () => {
@@ -92,7 +108,7 @@ export default function Links({ onViewAnalytics }) {
                       className={styles.shortLink}
                       onClick={() => onViewAnalytics(link.short)}
                     >
-                      lnk.ly/{link.short}
+                      {link.short}
                     </span>
                   </td>
                   <td>
@@ -109,7 +125,7 @@ export default function Links({ onViewAnalytics }) {
                   <td style={{ textAlign: 'right' }}>
                     <button
                       className={`${styles.btnGhost} ${styles.btnSm}`}
-                      onClick={() => onViewAnalytics(link.short)}
+                      onClick={() => onViewAnalytics(link.short.split('/').pop())} //.pop() takes the LAST item from an array.
                     >
                       Analytics →
                     </button>

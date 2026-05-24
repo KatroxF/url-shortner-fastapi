@@ -73,5 +73,11 @@ class URLAnalyticsResponse(BaseModel):
     labels: List[str]
     clicks: List[int]
     deviceStats: List[DeviceStat]
+
+class LinkInfo(BaseModel):
+    short_url: str
+    original_url: str
+    click_count: int
+    created_at: datetime
     
     

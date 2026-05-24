@@ -236,6 +236,15 @@ def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date
        
 
     }
+@app.get('/links',response_model=List[schemas.LinkInfo])
+def get_link_info(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db),page:int=1,limit:int=10):
+    urls=db.query(models.URL).filter(models.URL.user_id==current_user).offset((page-1)*limit).limit(limit).all()
+    return [{
+        "original_url": url.original_url,
+        "short_url": f"http://localhost:8000/{url.short_code}",
+        "click_count": url.click_count,
+        "created_at": url.created_at
+    }for url in urls]
    
 
 @app.get("/{short_code}")
