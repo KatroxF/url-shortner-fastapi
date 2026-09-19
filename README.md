@@ -1,4 +1,4 @@
-# URL Shortener 🚀
+# SmartLink Analytics Platform 🚀
 
 A scalable full-stack URL shortener built with FastAPI, PostgreSQL, React, Redis, and Celery featuring authentication, analytics tracking, caching, and asynchronous background processing.
 
