@@ -80,4 +80,5 @@ class LinkInfo(BaseModel):
     click_count: int
     created_at: datetime
     
-    
+class AIprompt(BaseModel):
+    prompt: str

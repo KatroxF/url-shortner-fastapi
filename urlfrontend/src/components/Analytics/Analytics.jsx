@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,10 +36,10 @@ export default function Analytics({ linkId, onBack }) {
   const [locationData, setLocationData] = useState([]);
 
   // AI Summary state
+  const [prompt, setPrompt] = useState('');
   const [aiSummary, setAiSummary] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
-  const aiFetchedRef = useRef('');
 
   const updateAnalyticsState = (data, selectedFrom = dateFrom, selectedTo = dateTo) => {
     const shortUrl = data.linkInfo?.short_url || '';
@@ -100,27 +100,30 @@ export default function Analytics({ linkId, onBack }) {
     fetchAnalytics();
   }, [linkId]);
 
-  // Fetch AI summary once on load
-  useEffect(() => {
-    if (!linkId || aiFetchedRef.current === linkId) return;
-    aiFetchedRef.current = linkId;
-    fetchAiSummary();
-  }, [linkId]);
+  // Ask AI (user-prompt-based)
+  const askAi = async () => {
+    if (!linkId || !prompt.trim()) return;
 
-  const fetchAiSummary = async () => {
     setAiLoading(true);
     setAiError('');
     setAiSummary('');
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(`http://127.0.0.1:8000/summary/${linkId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          prompt: prompt
+        })
       });
       if (!response.ok) throw new Error('Failed to fetch summary');
       const data = await response.json();
       setAiSummary(data.ai_summary || '');
     } catch (err) {
-      setAiError('Could not load AI summary. Try again.');
+      setAiError('Could not load AI response. Try again.');
     } finally {
       setAiLoading(false);
     }
@@ -313,28 +316,37 @@ export default function Analytics({ linkId, onBack }) {
           </div>
           <div>
             <div className={styles.aiTitle}>AI Summary</div>
-            <div className={styles.aiSubtitle}>Insights generated from your link analytics</div>
+            <div className={styles.aiSubtitle}>Ask questions about your link analytics</div>
           </div>
-          <button
-            className={styles.aiRefreshBtn}
-            onClick={fetchAiSummary}
-            disabled={aiLoading}
-            aria-label="Refresh AI summary"
-          >
-            <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2"
-              style={{ animation: aiLoading ? 'aiSpin 1s linear infinite' : 'none' }}
-            >
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
-            </svg>
-            {aiLoading ? 'Generating…' : 'Refresh'}
-          </button>
         </div>
 
         <div className={styles.aiBody}>
+          {/* Prompt input */}
+          <div className={styles.aiInputRow}>
+            <input
+              className={styles.aiInput}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') askAi(); }}
+              placeholder="Ask something about your analytics..."
+              disabled={aiLoading}
+            />
+            <button
+              className={styles.aiRefreshBtn}
+              onClick={askAi}
+              disabled={aiLoading || !prompt.trim()}
+            >
+              <svg
+                width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2"
+                style={{ animation: aiLoading ? 'aiSpin 1s linear infinite' : 'none' }}
+              >
+                <path d="M12 2L14.5 9.5H22L16 14L18.5 21.5L12 17L5.5 21.5L8 14L2 9.5H9.5Z"/>
+              </svg>
+              {aiLoading ? 'Thinking…' : 'Ask AI'}
+            </button>
+          </div>
+
           {aiLoading && (
             <div className={styles.aiSkeleton}>
               <div className={styles.skeletonLine} style={{ width: '92%' }} />
@@ -351,14 +363,14 @@ export default function Analytics({ linkId, onBack }) {
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
               {aiError}
-              <button className={styles.aiRetryBtn} onClick={fetchAiSummary}>Retry</button>
+              <button className={styles.aiRetryBtn} onClick={askAi}>Retry</button>
             </div>
           )}
           {!aiLoading && !aiError && aiSummary && (
             <p className={styles.aiText}>{aiSummary}</p>
           )}
           {!aiLoading && !aiError && !aiSummary && (
-            <p className={styles.aiEmpty}>No summary available yet.</p>
+            <p className={styles.aiEmpty}>Ask a question to get AI-powered insights.</p>
           )}
         </div>
       </div>
