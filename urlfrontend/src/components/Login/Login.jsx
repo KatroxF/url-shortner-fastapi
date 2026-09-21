@@ -96,12 +96,12 @@ function Login() {
 
           
           {error && (
-            <p style={{ color: "red", marginTop: "10px" }}>
+            <p className={styles.error} role="alert">
               {error}
             </p>
           )}
 
-          <p className={styles.subtext} style={{ marginTop: "15px" }}>
+          <p className={`${styles.subtext} ${styles.forgot}`}>
             <a href="#">Forgot password?</a>
           </p>
         </div>

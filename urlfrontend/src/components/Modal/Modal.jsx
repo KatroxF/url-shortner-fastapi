@@ -21,7 +21,7 @@ export default function Modal({ show, shortUrl, onClose, onViewAllLinks }) {
       className={`${styles.modalOverlay} ${show ? styles.show : ''}`}
       onClick={handleOverlayClick}
     >
-      <div className={styles.modal}>
+      <div className={styles.modal} role="dialog" aria-modal="true">
         <div className={styles.modalIcon}>
           <svg width="26" height="26" fill="none" strokeWidth="2.5" viewBox="0 0 24 24">
             <polyline points="20 6 9 17 4 12"/>

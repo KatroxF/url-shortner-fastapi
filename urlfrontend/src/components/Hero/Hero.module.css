@@ -1,25 +1,52 @@
 .hero {
+  --ink: #0e1b2c;
+  --muted: #55627a;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding-top: 80px;
-  padding-bottom: 40px;
-  max-width: 800px;
-  margin: 0 auto;
+  padding: clamp(56px, 10vw, 112px) 20px clamp(40px, 6vw, 64px);
+  background:
+    radial-gradient(60% 60% at 50% 0%, rgba(34, 200, 154, 0.14), transparent 70%),
+    linear-gradient(180deg, #f4f7fb 0%, #ffffff 100%);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  animation: heroIn 0.6s ease-out both;
 }
 
-/* Main heading */
 .heroTitle {
-  font-size: 42px;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 16px;
-  line-height: 1.2;
+  max-width: 20ch;
+  margin: 0 0 20px;
+  font-size: clamp(2.1rem, 5.5vw, 3.75rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  text-wrap: balance;
 }
 
-/* Sub text */
 .heroText {
-  font-size: 16px;
-  color: #cbd5e1; /* soft gray */
+  max-width: 52ch;
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.2rem);
   line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    animation: none;
+  }
 }

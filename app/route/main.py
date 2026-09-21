@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 from typing import Optional
 from datetime import timedelta
 from datetime import datetime,timezone
+from sqlalchemy.exc import IntegrityError
 
 from app.db.database import engine, SessionLocal, Base 
 from app.utils.util import encode
@@ -25,6 +26,7 @@ import json
 from app.service.ai_service import ask_ai
 from app.service import tools
 import logging
+from datetime import datetime, timedelta, timezone
 app=FastAPI()
 
 Base.metadata.create_all(bind=engine)
@@ -101,6 +103,19 @@ def read_me(current_user_id:int=Depends(get_current_user),db:Session=Depends(get
     if not user:
         raise HTTPException(status_code=404,detail="User not found")
     return user
+RESERVED_CODES = {
+    "login",
+    "register",
+    "me",
+    "url",
+    "urls",
+    "links",
+    "analytics",
+    "summary",
+    "docs",
+    "redoc",
+    "openapi.json",
+}
 @app.post('/url',response_model=schemas.MessageResponse)
 def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user),db:Session=Depends(get_db)):
     new_url=models.URL(
@@ -113,6 +128,8 @@ def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user
     short_code = encode(new_url.id)
     if data.custom_code:
         custom=data.custom_code.lower().replace(" ","-")
+        if custom in RESERVED_CODES:
+            raise HTTPException(status_code=400,detail="Custom code is reserved")
         final_code = f"{custom}-{short_code}"
     else:
         final_code = short_code
@@ -121,12 +138,12 @@ def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user
     db.refresh(new_url)
     return {
         "short_url": f"http://localhost:8000/{final_code}"
-    }
+    }    
 @app.get('/urls',response_model=List[schemas.URLResponse])
 def get_url(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db),page:int=1,limit:int=10):
     urls=db.query(models.URL).filter(
         models.URL.user_id==current_user
-    ).all()
+    ).offset((page-1)*limit).limit(limit).all()
     return[{
         "original_url": url.original_url,
         "short_url": f"http://localhost:8000/{url.short_code}",
@@ -152,93 +169,351 @@ def get_recent_urls(current_user=Depends(auth.get_current_user),db:Session=Depen
     }
     for url in urls]
 
-@app.get("/analytics/{short_code}",response_model=schemas.URLAnalyticsResponse)
-def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date: datetime=Query(None),current_user=Depends(auth.get_current_user),db:Session=Depends(get_db)):
-    if not start_date or not end_date:
-        end_date = datetime.now(timezone.utc)
-        start_date = end_date - timedelta(days=30)
+
+
+# @app.get("/analytics/{short_code}",response_model=schemas.URLAnalyticsResponse)
+# def get_url_analytics(short_code: str,start_date: datetime=Query(None), end_date: datetime=Query(None),current_user=Depends(auth.get_current_user),db:Session=Depends(get_db)):
+#     if not start_date or not end_date:
+#         end_date = datetime.now(timezone.utc)
+#         start_date = end_date - timedelta(days=30)
     
-    url=db.query(models.URL).filter(models.URL.short_code==short_code,models.URL.user_id==current_user).first()
-    if not url:
-        raise HTTPException(status_code=404,detail="URL not found")
-    total_clicks=db.query(func.count(models.Clicks.id)).filter(models.Clicks.url_id==url.id).scalar() or 0
-    unique_visitors=db.query(func.count(func.distinct(models.Clicks.visitor_id))
-                             ).filter(models.Clicks.url_id==url.id).scalar() or 0
-    peak_day_result=db.query(
-        func.date(models.Clicks.timestamp).label("day"),
-        func.count(models.Clicks.id).label("clicks")
-    ).filter(models.Clicks.url_id==url.id).group_by(func.date(models.Clicks.timestamp)).order_by(func.count(models.Clicks.id).desc()).first()
-    peak_day=peak_day_result.day if peak_day_result else None
-    clicks_data=db.query(
-        func.date(models.Clicks.timestamp).label("day"),
-        func.count(models.Clicks.id).label("clicks")
-    ).filter(
-        models.Clicks.url_id==url.id,
-        models.Clicks.timestamp>=start_date,
-        models.Clicks.timestamp<=end_date
-    ).group_by(func.date(models.Clicks.timestamp)).order_by(func.date(models.Clicks.timestamp)).all()
-    data_dict={row.day:row.clicks for row in clicks_data}
-    current=start_date.date()
-    end=end_date.date()
-    labels=[]
-    clicks=[]
-    while current <= end:
-        labels.append(current.strftime("%d %b"))  #strft=string format time 
-        clicks.append(data_dict.get(current, 0))  
-        current += timedelta(days=1)
-    device_data=db.query(
-        models.Clicks.device_os,
-        func.count(models.Clicks.id).label("clicks")
-    ).filter(models.Clicks.url_id==url.id,models.Clicks.timestamp >= start_date,
-    models.Clicks.timestamp <= end_date).group_by(models.Clicks.device_os).all()
-    device_stats=[{
-        "name":device or "Unknown",
-        "value":clicks
-    }
-    for device, clicks in device_data
+#     url=db.query(models.URL).filter(models.URL.short_code==short_code,models.URL.user_id==current_user).first()
+#     if not url:
+#         raise HTTPException(status_code=404,detail="URL not found")
+#     total_clicks=db.query(func.count(models.Clicks.id)).filter(models.Clicks.url_id==url.id).scalar() or 0
+#     unique_visitors=db.query(func.count(func.distinct(models.Clicks.visitor_id))
+#                              ).filter(models.Clicks.url_id==url.id).scalar() or 0
+#     peak_day_result=db.query(
+#         func.date(models.Clicks.timestamp).label("day"),
+#         func.count(models.Clicks.id).label("clicks")
+#     ).filter(models.Clicks.url_id==url.id).group_by(func.date(models.Clicks.timestamp)).order_by(func.count(models.Clicks.id).desc()).first()
+#     peak_day=peak_day_result.day if peak_day_result else None
+#     clicks_data=db.query(
+#         func.date(models.Clicks.timestamp).label("day"),
+#         func.count(models.Clicks.id).label("clicks")
+#     ).filter(
+#         models.Clicks.url_id==url.id,
+#         models.Clicks.timestamp>=start_date,
+#         models.Clicks.timestamp<=end_date
+#     ).group_by(func.date(models.Clicks.timestamp)).order_by(func.date(models.Clicks.timestamp)).all()
+#     data_dict={row.day:row.clicks for row in clicks_data}
+#     current=start_date.date()
+#     end=end_date.date()
+#     labels=[]
+#     clicks=[]
+#     while current <= end:
+#         labels.append(current.strftime("%d %b"))  #strft=string format time 
+#         clicks.append(data_dict.get(current, 0))  
+#         current += timedelta(days=1)
+#     device_data=db.query(
+#         models.Clicks.device_os,
+#         func.count(models.Clicks.id).label("clicks")
+#     ).filter(models.Clicks.url_id==url.id,models.Clicks.timestamp >= start_date,
+#     models.Clicks.timestamp <= end_date).group_by(models.Clicks.device_os).all()
+#     device_stats=[{
+#         "name":device or "Unknown",
+#         "value":clicks
+#     }
+#     for device, clicks in device_data
         
-    ]
-    location_data = db.query(
-    models.Clicks.country,
-    models.Clicks.city,
-    func.count(models.Clicks.id).label("clicks")
-).filter(
-    models.Clicks.url_id == url.id,
-    models.Clicks.timestamp >= start_date,
-    models.Clicks.timestamp <= end_date
-).group_by(
-    models.Clicks.country,
-    models.Clicks.city,
-).all()
-    location_item=[]
-    for row in location_data:
-        location_item.append({
-        "location": f"{row.country} - {row.city}" if row.city else row.country or "Unknown",
-        "total_clicks_location": row.clicks,
+#     ]
+#     location_data = db.query(
+#     models.Clicks.country,
+#     models.Clicks.city,
+#     func.count(models.Clicks.id).label("clicks")
+# ).filter(
+#     models.Clicks.url_id == url.id,
+#     models.Clicks.timestamp >= start_date,
+#     models.Clicks.timestamp <= end_date
+# ).group_by(
+#     models.Clicks.country,
+#     models.Clicks.city,
+# ).all()
+#     location_item=[]
+#     for row in location_data:
+#         location_item.append({
+#         "location": f"{row.country} - {row.city}" if row.city else row.country or "Unknown",
+#         "total_clicks_location": row.clicks,
         
-    })
+#     })
     
     
     
 
-    return {
+#     return {
         
+#         "stats": {
+#             "total_clicks": total_clicks,
+#             "unique_visitors": unique_visitors,
+#             "peak_day": peak_day.isoformat() if peak_day else None
+#         },
+#         "linkInfo":{
+#             "original_url": url.original_url,
+#             "short_url": f"http://localhost:8000/{url.short_code}"
+#         },
+        
+#         "labels": labels,
+#         "clicks": clicks,
+#         "deviceStats": device_stats,
+#         "locationStats": location_item
+       
+
+#     }
+MAX_RANGE_DAYS = 365
+
+
+def make_utc(dt):
+    """If the date has no timezone, assume UTC. Otherwise convert it to UTC."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+@app.get("/analytics/{short_code}", response_model=schemas.URLAnalyticsResponse)
+def get_url_analytics(
+    short_code: str,
+    start_date: datetime = Query(None),
+    end_date: datetime = Query(None),
+    current_user=Depends(auth.get_current_user),
+    db: Session = Depends(get_db),
+):
+    
+    if not start_date or not end_date:
+        
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=30)
+    else:
+        start_date = make_utc(start_date)
+        end_date = make_utc(end_date)
+
+    if start_date > end_date:
+        raise HTTPException(status_code=400, detail="start_date must be before end_date")
+
+    if (end_date - start_date).days > MAX_RANGE_DAYS:
+        raise HTTPException(status_code=400, detail="Date range is too big (max 365 days)")
+
+   
+    url = (
+        db.query(models.URL)
+        .filter(models.URL.short_code == short_code, models.URL.user_id == current_user)
+        .first()
+    )
+    if not url:
+        raise HTTPException(status_code=404, detail="URL not found")
+
+    
+    total_clicks = (
+        db.query(func.count(models.Clicks.id))
+        .filter(models.Clicks.url_id == url.id)
+        .scalar()
+    ) or 0
+
+    unique_visitors = (
+        db.query(func.count(func.distinct(models.Clicks.visitor_id)))
+        .filter(models.Clicks.url_id == url.id)
+        .scalar()
+    ) or 0
+
+    
+    day = func.date(models.Clicks.timestamp)
+
+    daily_rows = (
+        db.query(day.label("day"), func.count(models.Clicks.id).label("count"))
+        .filter(
+            models.Clicks.url_id == url.id,
+            models.Clicks.timestamp >= start_date,
+            models.Clicks.timestamp <= end_date,
+        )
+        .group_by(day)
+        .all()
+    )
+
+   
+    clicks_by_day = {}
+    for row in daily_rows:
+        clicks_by_day[row.day] = row.count
+
+    peak_day = None
+    if clicks_by_day:
+        peak_day = max(clicks_by_day, key=clicks_by_day.get)
+
+    
+    labels = []
+    clicks = []
+    current_day = start_date.date()
+    last_day = end_date.date()
+
+    while current_day <= last_day:
+        labels.append(current_day.strftime("%d %b"))
+        clicks.append(clicks_by_day.get(current_day, 0))
+        current_day += timedelta(days=1)
+
+    
+    device_rows = (
+        db.query(models.Clicks.device_os, func.count(models.Clicks.id))
+        .filter(
+            models.Clicks.url_id == url.id,
+            models.Clicks.timestamp >= start_date,
+            models.Clicks.timestamp <= end_date,
+        )
+        .group_by(models.Clicks.device_os)
+        .all()
+    )
+
+    device_stats = []
+    for device_name, count in device_rows:
+        device_stats.append({
+            "name": device_name or "Unknown",
+            "value": count,
+        })
+
+   
+    location_rows = (
+        db.query(models.Clicks.country, models.Clicks.city, func.count(models.Clicks.id))
+        .filter(
+            models.Clicks.url_id == url.id,
+            models.Clicks.timestamp >= start_date,
+            models.Clicks.timestamp <= end_date,
+        )
+        .group_by(models.Clicks.country, models.Clicks.city)
+        .all()
+    )
+
+    location_stats = []
+    for country, city, count in location_rows:
+        if country and city:
+            location_name = f"{country} - {city}"
+        elif country:
+            location_name = country
+        else:
+            location_name = "Unknown"
+
+        location_stats.append({
+            "location": location_name,
+            "total_clicks_location": count,
+        })
+
+    
+    return {
         "stats": {
             "total_clicks": total_clicks,
             "unique_visitors": unique_visitors,
-            "peak_day": peak_day.isoformat() if peak_day else None
+            "peak_day": peak_day.isoformat() if peak_day else None,
         },
-        "linkInfo":{
+        "linkInfo": {
             "original_url": url.original_url,
-            "short_url": f"http://localhost:8000/{url.short_code}"
+            "short_url": f"http://localhost:8000/{url.short_code}",
         },
-        
         "labels": labels,
         "clicks": clicks,
         "deviceStats": device_stats,
-        "locationStats": location_item
-       
+        "locationStats": location_stats,
+    }
+@app.get("/analytics/{short_code}", response_model=schemas.URLAnalyticsResponse)
+def get_url_analytics(
+    short_code: str,
+    start_date: datetime = Query(None),
+    end_date: datetime = Query(None),
+    current_user=Depends(auth.get_current_user),
+    db: Session = Depends(get_db),
+):
+    # ---- 1. Normalize and validate the date range ----
+    if not start_date or not end_date:
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=30)
+    else:
+        start_date = _to_utc(start_date)
+        end_date = _to_utc(end_date)
 
+    if start_date > end_date:
+        raise HTTPException(status_code=400, detail="start_date must be before end_date")
+    if (end_date - start_date).days > MAX_RANGE_DAYS:
+        raise HTTPException(status_code=400, detail=f"Range cannot exceed {MAX_RANGE_DAYS} days")
+
+    # ---- 2. Ownership check ----
+    url = (
+        db.query(models.URL)
+        .filter(models.URL.short_code == short_code, models.URL.user_id == current_user)
+        .first()
+    )
+    if not url:
+        raise HTTPException(status_code=404, detail="URL not found")
+
+    C = models.Clicks
+    in_range = (C.url_id == url.id, C.timestamp >= start_date, C.timestamp <= end_date)
+    day_col = func.date(C.timestamp)
+
+    # ---- 3. All-time totals in ONE query (uses the url_id prefix of the index) ----
+    total_clicks, unique_visitors = (
+        db.query(func.count(C.id), func.count(func.distinct(C.visitor_id)))
+        .filter(C.url_id == url.id)
+        .one()
+    )
+
+    # ---- 4. Clicks per day in range (chart + peak day come from this one query) ----
+    clicks_data = (
+        db.query(day_col.label("day"), func.count(C.id).label("clicks"))
+        .filter(*in_range)
+        .group_by(day_col)
+        .order_by(day_col)
+        .all()
+    )
+    data_dict = {row.day: row.clicks for row in clicks_data}
+
+    # Peak day within the selected range (no extra query needed)
+    peak_day = max(data_dict, key=data_dict.get) if data_dict else None
+
+    labels, clicks = [], []
+    current = start_date.date()
+    last_day = end_date.date()
+    while current <= last_day:
+        labels.append(current.strftime("%d %b"))
+        clicks.append(data_dict.get(current, 0))
+        current += timedelta(days=1)
+
+    # ---- 5. Device breakdown ----
+    device_data = (
+        db.query(C.device_os, func.count(C.id).label("clicks"))
+        .filter(*in_range)
+        .group_by(C.device_os)
+        .all()
+    )
+    device_stats = [
+        {"name": device or "Unknown", "value": count} for device, count in device_data
+    ]
+
+    # ---- 6. Location breakdown ----
+    location_data = (
+        db.query(C.country, C.city, func.count(C.id).label("clicks"))
+        .filter(*in_range)
+        .group_by(C.country, C.city)
+        .all()
+    )
+    location_stats = [
+        {
+            "location": (
+                f"{row.country} - {row.city}" if row.country and row.city
+                else row.country or "Unknown"
+            ),
+            "total_clicks_location": row.clicks,
+        }
+        for row in location_data
+    ]
+
+    return {
+        "stats": {
+            "total_clicks": total_clicks or 0,
+            "unique_visitors": unique_visitors or 0,
+            "peak_day": peak_day.isoformat() if peak_day else None,
+        },
+        "linkInfo": {
+            "original_url": url.original_url,
+            "short_url": f"http://localhost:8000/{url.short_code}",
+        },
+        "labels": labels,
+        "clicks": clicks,
+        "deviceStats": device_stats,
+        "locationStats": location_stats,
     }
 @app.get('/links',response_model=List[schemas.LinkInfo])
 def get_link_info(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db),page:int=1,limit:int=10):

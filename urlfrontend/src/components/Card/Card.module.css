@@ -1,88 +1,178 @@
 .card {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 80px;
+  --ink: #0e1b2c;
+  --muted: #55627a;
+  --accent: #22c89a;
+  --accent-dark: #0f8f6c;
+  --line: #e4e8f0;
+
+  width: calc(100% - 32px);
+  max-width: 520px;
+  margin: 0 auto 64px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(14, 27, 44, 0.04),
+    0 12px 32px rgba(14, 27, 44, 0.08);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 .cardContent {
-  background: #d3d3d3;
-  padding: 40px;
-  border-radius: 20px;
-  width: 600px;
-  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(22px, 5vw, 36px);
 }
 
-/* Title */
 .cardTitle {
-  font-size: 26px;
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.6rem);
   font-weight: 700;
-  color: #000;
-  margin-bottom: 6px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
 }
 
-/* Subtitle */
 .cardSubtitle {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 20px;
+  margin: -8px 0 6px;
+  font-size: 0.95rem;
+  color: var(--muted);
 }
 
-/* Input */
 .input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  outline: none;
-  font-size: 14px;
-  margin-bottom: 20px;
-  transition: border 0.2s ease;
+  height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #f8fafc;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.input::placeholder {
+  color: #94a0b5;
+}
+
+.input:hover {
+  border-color: #cdd5e2;
 }
 
 .input:focus {
-  border-color: #2acfcf;
+  outline: none;
+  background: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(34, 200, 154, 0.18);
 }
 
-/* Button */
 .cta {
-  background: #2563eb;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 10px;
+  height: 52px;
   border: none;
-  font-size: 14px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  box-shadow: 0 4px 12px rgba(14, 27, 44, 0.2);
+  transition: background-color 0.2s ease, transform 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 .cta:hover {
-  background: #1d4ed8;
+  background: #1c3049;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(14, 27, 44, 0.25);
 }
 
-/* Result link */
+.cta:active {
+  transform: translateY(0);
+}
+
+.cta:focus-visible,
+.copyBtn:focus-visible,
+.resultLink:focus-visible {
+  outline: 3px solid rgba(34, 200, 154, 0.55);
+  outline-offset: 2px;
+}
+
+.resultBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 10px 10px 10px 16px;
+  background: #effbf6;
+  border: 1px solid #c4eedd;
+  border-radius: 12px;
+  animation: resultIn 0.3s ease-out both;
+}
+
 .resultLink {
-  display: block;
-  margin-top: 20px;
-  color: #2563eb;
-  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--accent-dark);
   text-decoration: none;
+  border-radius: 4px;
 }
 
 .resultLink:hover {
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .copyBtn {
-  padding: 6px 10px;
-  border: none;
-  background: #2f6fed;
-  color: white;
-  border-radius: 6px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c4eedd;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 1.05rem;
+  line-height: 1;
   cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .copyBtn:hover {
-  background: #1e4fd1;
+  background: #f3fdf9;
+  transform: scale(1.06);
+}
+
+.copyBtn:active {
+  transform: scale(0.96);
+}
+
+@keyframes resultIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resultBox {
+    animation: none;
+  }
+
+  .cta,
+  .copyBtn,
+  .input {
+    transition: none;
+  }
 }

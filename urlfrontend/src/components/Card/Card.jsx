@@ -80,7 +80,12 @@ function Card() {
               {shortUrl}
             </a>
 
-            <button className={styles.copyBtn} onClick={handleCopy}>
+            <button
+              className={styles.copyBtn}
+              onClick={handleCopy}
+              aria-label="Copy short link"
+              title="Copy short link"
+            >
               {copied ? "✅" : "📋"}
             </button>
           </div>

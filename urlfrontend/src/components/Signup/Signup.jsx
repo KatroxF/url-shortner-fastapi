@@ -124,14 +124,14 @@ function Signup() {
 
           {/* ❌ Error */}
           {error && (
-            <p style={{ color: "red", marginTop: "10px" }}>
+            <p className={styles.error} role="alert">
               {error}
             </p>
           )}
 
           {/* ✅ Success */}
           {success && (
-            <p style={{ color: "green", marginTop: "10px" }}>
+            <p className={styles.success} role="status">
               {success}
             </p>
           )}

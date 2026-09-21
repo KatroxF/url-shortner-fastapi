@@ -2,6 +2,7 @@ from sqlalchemy import Column,Integer,String,DateTime,ForeignKey
 from app.db.database import Base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from sqlalchemy import Index
 
 class User(Base):
     __tablename__="users"
@@ -17,7 +18,7 @@ class URL(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     original_url = Column(String, nullable=False)
-    short_code = Column(String, unique=True, index=True)
+    short_code = Column(String, unique=True, index=True,nullable=False)
     user_id=Column(Integer,ForeignKey("users.id"),nullable=True)
     created_at= Column(DateTime(timezone=True), server_default=func.now())
     expired_at=Column(DateTime, nullable=True)
@@ -38,6 +39,9 @@ class Clicks(Base):
     city = Column(String)
     referrer = Column(String)
     url=relationship("URL", back_populates="clicks")
+    __table_args__=(
+        Index("idx_clicls_url_id_timestamp", "url_id", "timestamp"),
+    )
 
     
     

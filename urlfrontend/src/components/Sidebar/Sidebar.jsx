@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
+  const navigate = useNavigate();
   const[name, setName] = useState("Unknown");
   const getInitials = (name) => {
     if (!name) return "NA";
@@ -33,6 +35,11 @@ export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
     fetchname();
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    navigate("/");
+  };
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
@@ -42,9 +49,7 @@ export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
             <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
           </svg>
         </div>
-        <div className={styles.logoText}>
-          lnk<span>.</span>ly
-        </div>
+        <div className={styles.logoText}>shortly</div>
       </div>
 
       <nav className={styles.nav}>
@@ -82,6 +87,17 @@ export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
           </div>
         )}
       </nav>
+
+      <div className={styles.logoutWrap}>
+        <button className={styles.logoutBtn} onClick={handleLogout}>
+          <svg className={styles.navIcon} viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Log out
+        </button>
+      </div>
 
       <div className={styles.sidebarFooter}>
         <div className={styles.avatar}>
