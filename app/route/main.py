@@ -7,6 +7,7 @@ from datetime import datetime,timezone
 from sqlalchemy.exc import IntegrityError
 
 from app.db.database import engine, SessionLocal, Base 
+from app.utils.ratelimit import rate_limit
 from app.utils.util import encode
 from app.schemas import models
 from app.schemas import schemas
@@ -81,7 +82,13 @@ def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
     }
 
 @app.post("/login")
-def login(user:schemas.UserLogin,db:Session=Depends(get_db)):
+async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db)):
+    x_forwarded_for=request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        ip_client=x_forwarded_for.split(",")[0]
+    else:
+        ip_client=request.client.host
+    await rate_limit(f"login:{ip_client}",limit=10,window=60)
     db_user=db.query(models.User).filter(
         models.User.email==user.email
     ).first()
