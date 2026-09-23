@@ -28,7 +28,14 @@ from app.service.ai_service import ask_ai
 from app.service import tools
 import logging
 from datetime import datetime, timedelta, timezone
+from authlib.integrations.starlette_client import OAuth
+from starlette.middleware.sessions import SessionMiddleware
+from app.core.config import FRONTEND_URL
+from app.utils.oauth import oauth
+
 app=FastAPI()
+app.add_middleware(SessionMiddleware, secret_key="secret1234")
+
 
 Base.metadata.create_all(bind=engine)
 logger = logging.getLogger(__name__)
@@ -103,7 +110,46 @@ async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db
         "access_token":token
 
     }
-    
+@app.get("/auth/google") 
+async def google_auth(request: Request):
+    redirect_uri = request.url_for("google_callback")
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+@app.get("/auth/google/callback")
+async def google_callback(request: Request, db: Session = Depends(get_db)):
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except Exception:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=google_auth_failed")
+
+    user_info = token["userinfo"]
+    google_id = user_info["sub"]
+    email = user_info["email"]
+    name = user_info.get("name")
+
+    db_user = db.query(models.User).filter(models.User.google_id == google_id).first()
+    if not db_user:
+        
+        db_user = db.query(models.User).filter(models.User.email == email).first()
+
+    if db_user:
+        db_user.google_id = google_id
+        db.commit()
+        db.refresh(db_user)
+    else:
+        db_user = models.User(
+            email=email,
+            username=name,
+            google_id=google_id,
+            hashed_password=None
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+    access_token = auth.create_access_token({"user_id": db_user.id})
+    return RedirectResponse(f"{FRONTEND_URL}/oauth/callback?token={access_token}")
+
 @app.get('/me',response_model=schemas.UserResponse)
 def read_me(current_user_id:int=Depends(get_current_user),db:Session=Depends(get_db)):
     user=db.query(models.User).filter(models.User.id==current_user_id).first()
