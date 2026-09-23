@@ -112,7 +112,7 @@ async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db
     }
 @app.get("/auth/google") 
 async def google_auth(request: Request):
-    redirect_uri = request.url_for("google_callback")
+    redirect_uri = request.url_for("google_callback")  #request.url_for() is a FastAPI/Starlette method that generates a URL for a named route or route which contain that method.
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @app.get("/auth/google/callback")
@@ -152,6 +152,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
 
 @app.get('/me',response_model=schemas.UserResponse)
 def read_me(current_user_id:int=Depends(get_current_user),db:Session=Depends(get_db)):
+    print("DEBUG current_user_id:", repr(current_user_id), type(current_user_id))
     user=db.query(models.User).filter(models.User.id==current_user_id).first()
     if not user:
         raise HTTPException(status_code=404,detail="User not found")

@@ -20,6 +20,9 @@ def create_access_token(data:dict):
         "exp":expire
     })
     token= jwt.encode(header,payload, SECRET_KEY)
+    if isinstance(token, bytes):
+        token = token.decode("utf-8")
+    
     return token
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
