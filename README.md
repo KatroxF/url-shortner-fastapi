@@ -807,8 +807,6 @@ Before production deployment, consider:
 ### Planned Improvements
 
 - ⏳ Link expiration enforcement
-- ⏳ QR code generation
-- ⏳ Advanced traffic visualizations
 - ⏳ Production deployment configuration
 - ⏳ Docker Compose setup
 - ⏳ Automated tests
@@ -817,7 +815,7 @@ Before production deployment, consider:
 - ⏳ Centralized frontend API client
 - ⏳ Pagination metadata
 - ⏳ Refresh-token authentication
-- ⏳ Admin dashboard
+
 
 ---
 
