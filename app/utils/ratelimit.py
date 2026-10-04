@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from app.db.redis import redis_client
 async def rate_limit(key:str,limit:str,window:int):
-    count=await redis_client.get(key)
+    count=await redis_client.incr(key)
     if count==1:
         await redis_client.expire(key,window)
     if count>limit:

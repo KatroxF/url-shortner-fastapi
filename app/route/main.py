@@ -331,7 +331,6 @@ def get_url_analytics(
     current_user=Depends(auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    # ---- 1. Normalize and validate date range ----
     if not start_date or not end_date:
         end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=30)
@@ -351,7 +350,7 @@ def get_url_analytics(
             detail=f"Range cannot exceed {MAX_RANGE_DAYS} days"
         )
 
-    # ---- 2. Ownership check ----
+    
     url = (
         db.query(models.URL)
         .filter(
@@ -378,7 +377,7 @@ def get_url_analytics(
 
     day_col = func.date(C.timestamp)
 
-    # ---- 4. All-time totals ----
+   
     total_clicks, unique_visitors = (
         db.query(
             func.count(C.id),
@@ -388,7 +387,7 @@ def get_url_analytics(
         .one()
     )
 
-    # ---- 5. Clicks per day ----
+    
     clicks_data = (
         db.query(
             day_col.label("day"),
@@ -405,14 +404,14 @@ def get_url_analytics(
         for row in clicks_data
     }
 
-    # ---- 6. Peak day ----
+    
     peak_day = (
         max(data_dict, key=data_dict.get)
         if data_dict
         else None
     )
 
-    # ---- 7. Fill missing days with 0 ----
+    
     labels = []
     clicks = []
 
@@ -424,7 +423,7 @@ def get_url_analytics(
         clicks.append(data_dict.get(current, 0))
         current += timedelta(days=1)
 
-    # ---- 8. Device breakdown ----
+ 
     device_data = (
         db.query(
             C.device_os,
@@ -443,7 +442,7 @@ def get_url_analytics(
         for device, count in device_data
     ]
 
-    # ---- 9. Location breakdown ----
+    
     location_data = (
         db.query(
             C.country,
@@ -467,7 +466,7 @@ def get_url_analytics(
         for row in location_data
     ]
 
-    # ---- 10. Response ----
+ 
     return {
         "stats": {
             "total_clicks": total_clicks or 0,
