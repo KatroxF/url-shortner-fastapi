@@ -30,8 +30,10 @@ import logging
 from datetime import datetime, timedelta, timezone
 from authlib.integrations.starlette_client import OAuth
 from starlette.middleware.sessions import SessionMiddleware
+from app.exceptions import Usernotfound,InvalidURL
 from app.core.config import FRONTEND_URL
 from app.utils.oauth import oauth
+from fastapi.responses import JSONResponse
 
 app=FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="secret1234")
@@ -55,6 +57,13 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@app.exception_handler(InvalidURL)
+async def invalid_url_handle(req:Request,exc:InvalidURL):
+    return JSONResponse(
+        status_code=400,
+        content={"error":"Invalid URL"}
+    )
 
 @app.post('/register',response_model=schemas.Message)
 def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
@@ -99,10 +108,8 @@ async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db
     db_user=db.query(models.User).filter(
         models.User.email==user.email
     ).first()
-    if not db_user:
-          raise HTTPException(status_code=401,detail="Invalid email or password")
-    if not security.verify_password(user.password,db_user.hashed_password):
-          raise HTTPException(status_code=401,detail="Invalid email or password")
+    if not db_user or not db_user.hashed_password or not security.verify_password(user.password,db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid email or not")
     token=auth.create_access_token({
         "user_id":db_user.id
     })
