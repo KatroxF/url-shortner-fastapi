@@ -34,6 +34,8 @@ from app.exceptions import Usernotfound,InvalidURL
 from app.core.config import FRONTEND_URL
 from app.utils.oauth import oauth
 from fastapi.responses import JSONResponse
+import os
+USE_CACHE = os.getenv("USE_CACHE", "1") == "1"
 
 app=FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="secret1234")
@@ -502,7 +504,7 @@ def get_link_info(current_user=Depends(auth.get_current_user),db:Session=Depends
 
 @app.get("/{short_code}")
 async def redirect_url(short_code: str,request: Request,response: Response,db: Session = Depends(get_db)):
-    cached_data=await redis_client.get(f"url:{short_code}")
+    cached_data=await redis_client.get(f"url:{short_code}") if USE_CACHE else None
     if cached_data:
         data=json.loads(cached_data)  #json string to dict
         original_url=data["original_url"]
