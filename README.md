@@ -269,6 +269,38 @@ Redis is also used by the rate-limiting functionality.
 
 ---
 
+## 📈 Performance Benchmark
+
+The redirect endpoint was benchmarked with Locust using a fixed pool of **500 test URLs** to encourage repeated requests and Redis cache hits. The test configuration used **50 concurrent users**.
+
+### Redis caching comparison
+
+| Metric | Redis enabled | Redis disabled |
+|---|---:|---:|
+| Requests | 2,241 | 2,241 |
+| Failures | 0 | 0 |
+| Median latency | 99 ms | 200 ms |
+| Average latency | 104.48 ms | 217.07 ms |
+| P95 latency | 200 ms | 370 ms |
+| P99 latency | 360 ms | 1,200 ms |
+| Maximum latency | 897 ms | 1,627 ms |
+| Throughput | 123.07 RPS | 95.73 RPS |
+
+In this run, Redis caching reduced median latency by approximately **50.5%**, reduced average latency by approximately **51.9%**, and increased throughput by approximately **28.6%**.
+
+### Benchmark methodology
+
+- **Tool:** Locust
+- **Workload:** Random requests across 500 seeded short URLs (`load0`–`load499`)
+- **Concurrency:** 50 users
+- **Cache TTL:** 1 hour
+- **Comparison:** Same workload with Redis caching enabled and disabled
+- **Failures:** 0 in both recorded runs
+
+These are preliminary local benchmark results, not a production capacity guarantee. Results can vary with hardware, database state, cache hit rate, background analytics activity, and network conditions. Repeat the test several times under identical conditions before using the figures as a stable performance claim.
+
+---
+
 ## ⚙️ Background Analytics Processing
 
 Redirect requests should remain fast, so analytics processing is delegated to Celery.
@@ -348,11 +380,12 @@ The AI service uses the configured Groq API key.
 - Tailwind CSS
 - ESLint
 
-### Infrastructure
+### Infrastructure and Testing
 
 - PostgreSQL
 - Redis
 - Celery worker
+- Locust for load testing
 - Optional Docker-based Redis setup
 
 ---
@@ -815,7 +848,6 @@ Before production deployment, consider:
 - ⏳ Centralized frontend API client
 - ⏳ Pagination metadata
 - ⏳ Refresh-token authentication
-
 
 ---
 
