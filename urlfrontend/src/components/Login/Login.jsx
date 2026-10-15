@@ -1,13 +1,32 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./Login.module.css";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+const API_URL = "http://localhost:8000";
+
+const GOOGLE_ERRORS = {
+  email_already_registered:
+    "This email is already registered. Please log in with your email and password.",
+  google_auth_failed: "Google sign-in failed. Please try again.",
+  google_email_not_verified: "Your Google email is not verified.",
+};
 
 function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [unverified, setUnverified] = useState(false);
+
+  // Show errors that come back from the Google redirect (/login?error=...)
+  useEffect(() => {
+    const code = searchParams.get("error");
+    if (code) {
+      setError(GOOGLE_ERRORS[code] || "Something went wrong.");
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -15,8 +34,10 @@ function Login() {
       return;
     }
 
+    setUnverified(false);
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +53,11 @@ function Login() {
       if (!response.ok) {
         let errorMessage = "Login failed.";
 
-        if (Array.isArray(data.detail)) {
+        if (response.status === 403) {
+          // Email not verified yet
+          setUnverified(true);
+          errorMessage = data.detail;
+        } else if (Array.isArray(data.detail)) {
           const msg = data.detail[0].msg;
 
           if (msg.includes("valid email")) {
@@ -41,12 +66,15 @@ function Login() {
             errorMessage = msg;
           }
         } else if (typeof data.detail === "string") {
-          errorMessage = "Invalid email or password";
+          // 401 = wrong credentials, anything else (e.g. 429 rate limit) shows the server message
+          errorMessage =
+            response.status === 401 ? "Invalid email or password" : data.detail;
         }
 
         setError(errorMessage);
         return;
       }
+
       localStorage.setItem("access_token", data.access_token);
       setError("");
       setTimeout(() => {
@@ -59,7 +87,7 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/auth/google";
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   return (
@@ -129,6 +157,16 @@ function Login() {
           {error && (
             <p className={styles.error} role="alert">
               {error}
+            </p>
+          )}
+
+          {unverified && (
+            <p className={styles.subtext}>
+              <Link
+                to={`/resend-verification?email=${encodeURIComponent(email)}`}
+              >
+                Resend verification email
+              </Link>
             </p>
           )}
 

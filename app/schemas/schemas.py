@@ -82,3 +82,6 @@ class LinkInfo(BaseModel):
     
 class AIprompt(BaseModel):
     prompt: str
+
+class ResendVerification(BaseModel):
+    email: EmailStr

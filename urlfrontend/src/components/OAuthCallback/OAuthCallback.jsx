@@ -10,15 +10,15 @@ function OAuthCallback() {
     const error = searchParams.get("error");
 
     if (error) {
-      navigate("/login?error=google_auth_failed");
+      navigate(`/login?error=${encodeURIComponent(error)}`, { replace: true });
       return;
     }
 
     if (token) {
       localStorage.setItem("access_token", token);
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } else {
-      navigate("/login");
+      navigate("/login?error=google_auth_failed", { replace: true });
     }
   }, [searchParams, navigate]);
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,String,DateTime,ForeignKey
+from sqlalchemy import Column,Integer,String,DateTime,ForeignKey,Boolean,text
 from app.db.database import Base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -12,6 +12,9 @@ class User(Base):
     hashed_password=Column(String, nullable=True)
     created_at=Column(DateTime(timezone=True), server_default=func.now())
     google_id=Column(String,unique=True, nullable=True)
+    is_verified = Column(Boolean, nullable=False, default=False, server_default=text("false"))
+    verification_token = Column(String, unique=True, index=True, nullable=True)
+    verification_token_expires_at = Column(DateTime(timezone=True), nullable=True)
     urls=relationship("URL", back_populates="user")
 
 class URL(Base):

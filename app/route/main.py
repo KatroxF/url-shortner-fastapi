@@ -35,6 +35,12 @@ from app.core.config import FRONTEND_URL
 from app.utils.oauth import oauth
 from fastapi.responses import JSONResponse
 import os
+from fastapi import BackgroundTasks
+import secrets
+from app.utils.email_verification import (
+    generate_verification_token, is_token_expired, send_verification_email,
+)
+from app.utils.email_verification import is_token_expired
 USE_CACHE = os.getenv("USE_CACHE", "1") == "1"
 
 app=FastAPI()
@@ -68,7 +74,7 @@ async def invalid_url_handle(req:Request,exc:InvalidURL):
     )
 
 @app.post('/register',response_model=schemas.Message)
-def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
+def register(user:schemas.UserCreate,background_task:BackgroundTasks,db:Session=Depends(get_db)):
     existing_email=db.query(models.User).filter(
         models.User.email==user.email
     ).first()
@@ -85,19 +91,82 @@ def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
             status_code=400,
             detail="Username already taken"
         )
+    token,expire_at=generate_verification_token()
     hashed=security.hashed_password(user.password)
     new_user=models.User(
         username=user.username,
         email=user.email,
-        hashed_password=hashed
+        hashed_password=hashed,
+        is_verified=False,
+        verification_token=token,
+        verification_token_expires_at=expire_at
 
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    background_task.add_task(
+        send_verification_email,new_user.email,new_user.username,token
+    )
     return{
-        "message":"User registered successfull"
+        "message": "Registered. Please check your email to verify your account."
     }
+
+
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.utils.email_verification import is_token_expired
+
+
+@app.get("/verify-email", response_model=schemas.Message)
+def verify_email(token: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(
+        models.User.verification_token == token
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid verification link"
+        )
+
+    if is_token_expired(user.verification_token_expires_at):
+        raise HTTPException(
+            status_code=400,
+            detail="Link expired. Request a new one."
+        )
+
+    user.is_verified = True
+    user.verification_token = None
+    user.verification_token_expires_at = None
+
+    db.commit()
+
+    return {
+        "message": "Email verified. You can now log in."
+    }
+
+@app.post('/resend-verification', response_model=schemas.Message)
+def resend_verification(data: schemas.ResendVerification,
+                        background_tasks: BackgroundTasks,
+                        db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(
+        models.User.email == data.email
+    ).first()
+    if user and not user.is_verified:
+        token, expires_at = generate_verification_token()
+        user.verification_token = token
+        user.verification_token_expires_at = expires_at
+        db.commit()
+        background_tasks.add_task(
+            send_verification_email, user.email, user.username, token
+        )
+    
+    return {"message": "If that account exists and is unverified, a new link was sent."}
+
+
+
 
 @app.post("/login")
 async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db)):
@@ -112,6 +181,11 @@ async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db
     ).first()
     if not db_user or not db_user.hashed_password or not security.verify_password(user.password,db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or not")
+    if not db_user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email before loggin in"
+        )
     token=auth.create_access_token({
         "user_id":db_user.id
     })
@@ -122,7 +196,17 @@ async def login(user:schemas.UserLogin,request:Request,db:Session=Depends(get_db
 @app.get("/auth/google") 
 async def google_auth(request: Request):
     redirect_uri = request.url_for("google_callback")  #request.url_for() is a FastAPI/Starlette method that generates a URL for a named route or route which contain that method.
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(request, redirect_uri,prompt="select_account")
+
+
+
+def generate_unique_username(db: Session, name: str | None, email: str) -> str:
+    base = (name or email.split("@")[0]).strip() or "user"
+    username = base
+    while db.query(models.User).filter(models.User.username == username).first():
+        username = f"{base}{secrets.randbelow(100000)}"
+    return username
+
 
 @app.get("/auth/google/callback")
 async def google_callback(request: Request, db: Session = Depends(get_db)):
@@ -132,25 +216,37 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(f"{FRONTEND_URL}/login?error=google_auth_failed")
 
     user_info = token["userinfo"]
+
+    if not user_info.get("email_verified"):
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=google_email_not_verified")
+
     google_id = user_info["sub"]
     email = user_info["email"]
     name = user_info.get("name")
 
+    
     db_user = db.query(models.User).filter(models.User.google_id == google_id).first()
-    if not db_user:
-        
-        db_user = db.query(models.User).filter(models.User.email == email).first()
 
-    if db_user:
-        db_user.google_id = google_id
-        db.commit()
-        db.refresh(db_user)
-    else:
+    if not db_user:
+        existing = db.query(models.User).filter(models.User.email == email).first()
+
+        if existing:
+            if existing.is_verified:
+                
+                return RedirectResponse(
+                    f"{FRONTEND_URL}/login?error=email_already_registered"
+                )
+            
+            db.delete(existing)
+            db.commit()
+
+        
         db_user = models.User(
             email=email,
-            username=name,
+            username=generate_unique_username(db, name, email),
             google_id=google_id,
-            hashed_password=None
+            hashed_password=None,
+            is_verified=True,
         )
         db.add(db_user)
         db.commit()
@@ -158,6 +254,41 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
 
     access_token = auth.create_access_token({"user_id": db_user.id})
     return RedirectResponse(f"{FRONTEND_URL}/oauth/callback?token={access_token}")
+
+# @app.get("/auth/google/callback")
+# async def google_callback(request: Request, db: Session = Depends(get_db)):
+#     try:
+#         token = await oauth.google.authorize_access_token(request)
+#     except Exception:
+#         return RedirectResponse(f"{FRONTEND_URL}/login?error=google_auth_failed")
+
+#     user_info = token["userinfo"]
+#     google_id = user_info["sub"]
+#     email = user_info["email"]
+#     name = user_info.get("name")
+
+#     db_user = db.query(models.User).filter(models.User.google_id == google_id).first()
+#     if not db_user:
+        
+#         db_user = db.query(models.User).filter(models.User.email == email).first()
+
+#     if db_user:
+#         db_user.google_id = google_id
+#         db.commit()
+#         db.refresh(db_user)
+#     else:
+#         db_user = models.User(
+#             email=email,
+#             username=name,
+#             google_id=google_id,
+#             hashed_password=None
+#         )
+#         db.add(db_user)
+#         db.commit()
+#         db.refresh(db_user)
+
+#     access_token = auth.create_access_token({"user_id": db_user.id})
+#     return RedirectResponse(f"{FRONTEND_URL}/oauth/callback?token={access_token}")
 
 @app.get('/me',response_model=schemas.UserResponse)
 def read_me(current_user_id:int=Depends(get_current_user),db:Session=Depends(get_db)):
