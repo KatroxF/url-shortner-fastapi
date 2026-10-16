@@ -85,3 +85,10 @@ class AIprompt(BaseModel):
 
 class ResendVerification(BaseModel):
     email: EmailStr
+    
+class ForgotPassword(BaseModel):
+    email: EmailStr
+
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8)

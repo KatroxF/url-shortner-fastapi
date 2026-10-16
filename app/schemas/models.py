@@ -15,6 +15,8 @@ class User(Base):
     is_verified = Column(Boolean, nullable=False, default=False, server_default=text("false"))
     verification_token = Column(String, unique=True, index=True, nullable=True)
     verification_token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    reset_token_hash = Column(String, unique=True, index=True, nullable=True)
+    reset_token_expires_at = Column(DateTime(timezone=True), nullable=True)
     urls=relationship("URL", back_populates="user")
 
 class URL(Base):

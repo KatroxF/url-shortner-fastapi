@@ -255,6 +255,49 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
     access_token = auth.create_access_token({"user_id": db_user.id})
     return RedirectResponse(f"{FRONTEND_URL}/oauth/callback?token={access_token}")
 
+from app.utils.email_verification import (
+    generate_reset_token, hash_token, is_token_expired, send_reset_email,
+)
+
+@app.post('/forgot-password', response_model=schemas.Message)
+async def forgot_password(data: schemas.ForgotPassword,
+                          request: Request,
+                          background_tasks: BackgroundTasks,
+                          db: Session = Depends(get_db)):
+    
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    ip_client = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.client.host
+    await rate_limit(f"forgot:{ip_client}", limit=3, window=3600)
+
+    user = db.query(models.User).filter(models.User.email == data.email).first()
+
+    
+    if user and user.is_verified and user.hashed_password:
+        token, token_hash, expires_at = generate_reset_token()
+        user.reset_token_hash = token_hash
+        user.reset_token_expires_at = expires_at
+        db.commit()
+        background_tasks.add_task(send_reset_email, user.email, user.username, token)
+
+    
+    return {"message": "If that email is registered, a reset link has been sent."}
+
+
+@app.post('/reset-password', response_model=schemas.Message)
+def reset_password(data: schemas.ResetPassword, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(
+        models.User.reset_token_hash == hash_token(data.token)
+    ).first()
+
+    if not user or is_token_expired(user.reset_token_expires_at):
+        raise HTTPException(status_code=400, detail="Invalid or expired reset link")
+
+    user.hashed_password = security.hashed_password(data.new_password)
+    user.reset_token_hash = None            # single use
+    user.reset_token_expires_at = None
+    db.commit()
+    return {"message": "Password updated. You can now log in."}
+
 # @app.get("/auth/google/callback")
 # async def google_callback(request: Request, db: Session = Depends(get_db)):
 #     try:

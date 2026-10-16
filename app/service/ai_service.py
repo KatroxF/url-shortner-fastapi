@@ -56,7 +56,7 @@ SYSTEM_PROMPT = (
 
 
 def _chat(**kwargs):
-    # Retry once on flaky tool calls, rate limits or connection errors
+    
     for attempt in range(2):
         try:
             return client.chat.completions.create(**kwargs)
@@ -71,11 +71,11 @@ def _run_tool(name: str, url_id: int, db: Session):
     if function is None:
         return {"error": "Unknown tool"}
     try:
-        # url_id and db come from the server, never from the model
+        
         return function(url_id=url_id, db=db)
     except Exception:
         logger.exception("Tool %s failed", name)
-        db.rollback()  # clears a failed transaction so later queries work
+        db.rollback()  
         return {"error": "Could not fetch this data"}
 
 
@@ -85,8 +85,7 @@ def ask_ai(prompt: str, url_id: int, db: Session) -> str:
         {"role": "user", "content": prompt},
     ]
 
-    # Rounds 0..MAX_TOOL_ROUNDS-1 allow tools; the last round has no tools,
-    # so the model must write its final answer.
+   
     for round_number in range(MAX_TOOL_ROUNDS + 1):
         allow_tools = round_number < MAX_TOOL_ROUNDS
 
@@ -103,7 +102,7 @@ def ask_ai(prompt: str, url_id: int, db: Session) -> str:
         response = _chat(**params)
         message = response.choices[0].message
 
-        # No tool requested -> this is the final answer
+       
         if not message.tool_calls:
             return message.content or ""
 

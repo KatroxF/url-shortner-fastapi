@@ -171,7 +171,7 @@ function Login() {
           )}
 
           <p className={`${styles.subtext} ${styles.forgot}`}>
-            <a href="#">Forgot password?</a>
+            <Link to="/forgot-password">Forgot password?</Link>
           </p>
         </div>
       </div>
