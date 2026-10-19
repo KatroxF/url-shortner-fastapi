@@ -10,6 +10,10 @@ const GOOGLE_ERRORS = {
     "This email is already registered. Please log in with your email and password.",
   google_auth_failed: "Google sign-in failed. Please try again.",
   google_email_not_verified: "Your Google email is not verified.",
+  verification_invalid:
+    "This verification link is invalid or was already used. Try logging in.",
+  verification_expired:
+    "This verification link has expired. Request a new one.",
 };
 
 function Login() {
@@ -20,12 +24,19 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [unverified, setUnverified] = useState(false);
+  const [success, setSuccess] = useState("");
 
   // Show errors that come back from the Google redirect (/login?error=...)
-  useEffect(() => {
+    useEffect(() => {
     const code = searchParams.get("error");
     if (code) {
       setError(GOOGLE_ERRORS[code] || "Something went wrong.");
+      if (code === "verification_expired") {
+        setUnverified(true);
+      }
+    }
+    if (searchParams.get("verified")) {
+      setSuccess("Email verified. You can now log in.");
     }
   }, [searchParams]);
 
@@ -160,6 +171,8 @@ function Login() {
               {error}
             </p>
           )}
+
+          {success && <p className={styles.subtext}>{success}</p>}
 
           {unverified && (
             <p className={styles.subtext}>

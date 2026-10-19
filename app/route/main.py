@@ -51,14 +51,14 @@ app.add_middleware(SessionMiddleware, secret_key="secret1234")
 Base.metadata.create_all(bind=engine)
 logger = logging.getLogger(__name__)
 
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 def get_db():
     db=SessionLocal()
@@ -120,33 +120,24 @@ from sqlalchemy.orm import Session
 from app.utils.email_verification import is_token_expired
 
 
-@app.get("/verify-email", response_model=schemas.Message)
+@app.get("/verify-email")
 def verify_email(token: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(
         models.User.verification_token == token
     ).first()
 
     if not user:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid verification link"
-        )
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=verification_invalid")
 
     if is_token_expired(user.verification_token_expires_at):
-        raise HTTPException(
-            status_code=400,
-            detail="Link expired. Request a new one."
-        )
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=verification_expired")
 
     user.is_verified = True
     user.verification_token = None
     user.verification_token_expires_at = None
-
     db.commit()
 
-    return {
-        "message": "Email verified. You can now log in."
-    }
+    return RedirectResponse(f"{FRONTEND_URL}/login?verified=1")
 
 @app.post('/resend-verification', response_model=schemas.Message)
 def resend_verification(data: schemas.ResendVerification,

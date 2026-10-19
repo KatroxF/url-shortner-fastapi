@@ -1,8 +1,9 @@
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env.prod
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -26,7 +27,7 @@ services:
   # one-shot: runs Alembic migrations, then exits
   migrate:
     build: .
-    env_file: .env.docker
+    env_file: .env.prod
     command: alembic upgrade head
     depends_on:
       db:
@@ -35,7 +36,7 @@ services:
   backend:
     build: .
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env.prod
     expose:
       - "8000"
     depends_on:
@@ -45,11 +46,10 @@ services:
         condition: service_healthy
 
   # Celery worker: runs save_click_analytics (called from main.py with .delay)
-  # If your Celery instance lives somewhere else, change "app.service.task".
   worker:
     build: .
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env.prod
     command: celery -A app.service.task worker --loglevel=info
     depends_on:
       migrate:
