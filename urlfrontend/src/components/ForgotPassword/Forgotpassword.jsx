@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import styles from "../Login/Login.module.css";
 import { useState } from "react";
+import { API_URL } from "@/config";
 
-const API_URL = "http://localhost:8000";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");

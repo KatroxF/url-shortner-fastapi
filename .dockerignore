@@ -1,0 +1,39 @@
+# ---- virtualenv / python cache ----
+vvenv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# ---- secrets: provided at runtime via env_file, never baked into the image ----
+.env
+.env.*
+
+# ---- git / editor ----
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# ---- docker files themselves ----
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# ---- not needed at runtime ----
+tests/
+test.py
+test_import.db
+locustfile.py
+seed.py
+pytest.ini
+screenshots/
+README.md
+cached_*.csv
+
+# ---- frontend (built in its own image) ----
+urlfrontend/
+node_modules/
+package.json
+package-lock.json

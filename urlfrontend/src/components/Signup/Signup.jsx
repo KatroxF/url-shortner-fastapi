@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import styles from "./Signup.module.css";
 import { useState } from "react";
+import { API_URL } from "@/config";
 
-const API_URL = "http://localhost:8000";
+
 
 function Signup() {
   const [username, setUsername] = useState("");

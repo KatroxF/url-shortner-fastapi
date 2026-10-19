@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from './Home.module.css';
+import { SHORT_BASE } from "@/config";
 
 export default function Home({ onShorten, onViewAnalytics }) {
   const [longUrl, setLongUrl] = useState('');
@@ -82,7 +83,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
   };
 
   const handleCopy = (shortCode, id) => {
-    const fullUrl = `http://localhost:8000/${shortCode}`;
+    const fullUrl = `${SHORT_BASE}/${shortCode}`;
     navigator.clipboard.writeText(fullUrl).then(() => {
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
@@ -164,12 +165,12 @@ export default function Home({ onShorten, onViewAnalytics }) {
                 
                 <a
                   className={styles.activityShort}
-                  href={`http://localhost:8000/${activity.short}`}
+                  href={`${SHORT_BASE}/${activity.short}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Open shortened link"
                 >
-                  http://localhost:8000/{activity.short}
+                  {SHORT_BASE}/{activity.short}
                 </a>
 
                 

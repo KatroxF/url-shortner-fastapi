@@ -1,2 +1,26 @@
+# virtualenv
 vvenv/
+venv/
+
+# python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# secrets (all env files)
 .env
+.env.*
+!.env.example
+
+# local data and caches
+test_import.db
+cached_*.csv
+
+# node
+node_modules/
+dist/
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store

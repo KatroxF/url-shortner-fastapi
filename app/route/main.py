@@ -40,6 +40,7 @@ import secrets
 from app.utils.email_verification import (
     generate_verification_token, is_token_expired, send_verification_email,
 )
+from app.core.config import FRONTEND_URL,BASE_URL
 from app.utils.email_verification import is_token_expired
 USE_CACHE = os.getenv("USE_CACHE", "1") == "1"
 
@@ -374,7 +375,7 @@ def url(data:schemas.URLCreate,user_id:Optional [int] = Depends(get_current_user
     db.commit()
     db.refresh(new_url)
     return {
-        "short_url": f"http://localhost:8000/{final_code}"
+        "short_url": f"{BASE_URL}/{final_code}"
     }    
 @app.get('/urls',response_model=List[schemas.URLResponse])
 def get_url(current_user=Depends(auth.get_current_user),db:Session=Depends(get_db),page:int=1,limit:int=10):
@@ -383,7 +384,7 @@ def get_url(current_user=Depends(auth.get_current_user),db:Session=Depends(get_d
     ).offset((page-1)*limit).limit(limit).all()
     return[{
         "original_url": url.original_url,
-        "short_url": f"http://localhost:8000/{url.short_code}",
+        "short_url": f"{BASE_URL}/{url.short_code}",
         "short_code": url.short_code,
         "click_count": url.click_count,
         "created_at": url.created_at,
@@ -486,7 +487,7 @@ def get_recent_urls(current_user=Depends(auth.get_current_user),db:Session=Depen
 #         },
 #         "linkInfo":{
 #             "original_url": url.original_url,
-#             "short_url": f"http://localhost:8000/{url.short_code}"
+#             "short_url": f"{BASE_URL}/{url.short_code}"
 #         },
         
 #         "labels": labels,
@@ -658,7 +659,7 @@ def get_url_analytics(
         },
         "linkInfo": {
             "original_url": url.original_url,
-            "short_url": f"http://localhost:8000/{url.short_code}",
+            "short_url": f"{BASE_URL}/{url.short_code}",
         },
         "labels": labels,
         "clicks": clicks,
@@ -670,7 +671,7 @@ def get_link_info(current_user=Depends(auth.get_current_user),db:Session=Depends
     urls=db.query(models.URL).filter(models.URL.user_id==current_user).offset((page-1)*limit).limit(limit).all()
     return [{
         "original_url": url.original_url,
-        "short_url": f"http://localhost:8000/{url.short_code}",
+        "short_url": f"{BASE_URL}/{url.short_code}",
         "click_count": url.click_count,
         "created_at": url.created_at
     }for url in urls]

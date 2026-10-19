@@ -1,8 +1,9 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./Login.module.css";
 import { useState, useEffect } from "react";
+import { API_URL } from "@/config";
 
-const API_URL = "http://localhost:8000";
+
 
 const GOOGLE_ERRORS = {
   email_already_registered:

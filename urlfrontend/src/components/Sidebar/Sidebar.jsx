@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Sidebar.module.css';
+import { API_URL } from "@/config";
 
 export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function Sidebar({ activePage, onNavigate, showAnalytics }) {
     const fetchname = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost:8000/me", {
+        const response = await fetch(`${API_URL}/me`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
