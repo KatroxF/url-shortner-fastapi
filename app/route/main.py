@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL],
+    allow_origins=["https://shrinkly.co.in", "https://www.shrinkly.co.in"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
