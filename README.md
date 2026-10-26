@@ -863,13 +863,6 @@ Before production deployment, consider:
 
 ---
 
-## 📄 License
-
-Add your preferred license here, for example:
-
-```text
-MIT License
-```
 
 ---
 
