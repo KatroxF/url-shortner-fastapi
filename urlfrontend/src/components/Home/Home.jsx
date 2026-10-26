@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from './Home.module.css';
-import { SHORT_BASE } from "@/config";
+import { API_URL, SHORT_BASE } from "@/config";
 
 export default function Home({ onShorten, onViewAnalytics }) {
   const [longUrl, setLongUrl] = useState('');
@@ -17,7 +17,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
     const fetchDashboardStats = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://127.0.0.1:8000/urls', {
+        const response = await fetch(`${API_URL}/urls`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
 
@@ -53,7 +53,7 @@ export default function Home({ onShorten, onViewAnalytics }) {
     const fetchRecentActivity = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://127.0.0.1:8000/urls/recent', {
+        const response = await fetch(`${API_URL}/urls/recent`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
 

@@ -84,7 +84,7 @@ export default function Analytics({ linkId, onBack }) {
     const fetchAnalytics = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch(`http://127.0.0.1:8000/analytics/${linkId}`, {
+        const response = await fetch(`${API_URL}/analytics/${linkId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
 
@@ -109,7 +109,7 @@ export default function Analytics({ linkId, onBack }) {
     setAiSummary('');
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://127.0.0.1:8000/summary/${linkId}`, {
+      const response = await fetch(`${API_URL}/summary/${linkId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default function Analytics({ linkId, onBack }) {
 
       const query = params.toString();
       const response = await fetch(
-        `http://127.0.0.1:8000/analytics/${linkId}${query ? `?${query}` : ''}`,
+        `${API_URL}/analytics/${linkId}${query ? `?${query}` : ''}`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         }

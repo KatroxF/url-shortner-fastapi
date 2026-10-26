@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from './Links.module.css';
+import { API_URL, SHORT_BASE } from "@/config";
 
 export default function Links({ onViewAnalytics }) {
   const [links, setLinks] = useState([]);
@@ -10,7 +11,7 @@ export default function Links({ onViewAnalytics }) {
     const fetchLinks = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://127.0.0.1:8000/links', {
+        const response = await fetch(`${API_URL}/links`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
 

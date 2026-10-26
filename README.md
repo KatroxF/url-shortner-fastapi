@@ -634,19 +634,19 @@ uvicorn app.route.main:app --reload
 The API will be available at:
 
 ```text
-http://127.0.0.1:8000
+${API_URL}
 ```
 
 Interactive API documentation:
 
 ```text
-http://127.0.0.1:8000/docs
+${API_URL}/docs
 ```
 
 Alternative documentation:
 
 ```text
-http://127.0.0.1:8000/redoc
+${API_URL}/redoc
 ```
 
 ---
