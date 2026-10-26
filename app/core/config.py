@@ -18,3 +18,4 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 RESET_TOKEN_EXPIRE_MINUTES = 15
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_REDIS_URL=os.getenv("CELERY_REDIS_URL","redis://localhost:6379/1")

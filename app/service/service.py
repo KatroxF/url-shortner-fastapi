@@ -1,6 +1,10 @@
+import os
 from celery import Celery
-celery_app=Celery(
+from app.core.config import CELERY_REDIS_URL
+
+
+celery_app = Celery(
     "worker",
-    broker="redis://localhost:6379/1",
-    backend="redis://localhost:6379/1"
+    broker=CELERY_REDIS_URL,
+    backend=CELERY_REDIS_URL,
 )
