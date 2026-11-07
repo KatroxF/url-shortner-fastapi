@@ -91,7 +91,7 @@ def send_reset_email(to_email: str, username: str, token: str) -> None:
 
     try:
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
-            server.starttls()
+            server.starttls() #mail has been encrpyted using TLS
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.send_message(msg)
     except Exception:
