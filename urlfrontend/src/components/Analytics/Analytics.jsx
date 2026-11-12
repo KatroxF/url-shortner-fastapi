@@ -21,6 +21,7 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+import { API_URL } from "@/config";
 
 export default function Analytics({ linkId, onBack }) {
   const [linkInfo, setLinkInfo] = useState({ short: '—', long: '' });
