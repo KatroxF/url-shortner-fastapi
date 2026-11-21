@@ -1,0 +1,79 @@
+.card {
+  --card-bg: #0a2130;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --accent: #2ec4a6;
+  --text: #f1f5f9;
+  --text-muted: #a8b8c6;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  height: 100%; /* equal heights inside the grid */
+  padding: 28px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.card:hover {
+  border-color: rgba(46, 196, 166, 0.45);
+}
+
+.iconTile {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(46, 196, 166, 0.14);
+  color: var(--accent);
+}
+
+.body {
+  min-width: 0;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.description {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.badgeIcon {
+  display: inline-flex;
+}
+
+@media (max-width: 480px) {
+  .card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

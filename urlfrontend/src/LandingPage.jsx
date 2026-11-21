@@ -1,9 +1,9 @@
-
 import Navbar from "./components/Navbar/Navbar";
 import Hero from "./components/Hero/Hero";
 import Card from "./components/Card/Card";
-import Login from "./components/Login/Login";
-import "./index.css"
+import PlatformFeatures from "./components/Features/PlatformFeatures";
+import AdditionalFeatures from "./components/Features/AdditionalFeatures";
+import "./index.css";
 
 function LandingPage() {
   return (
@@ -11,6 +11,10 @@ function LandingPage() {
       <Navbar />
       <Hero />
       <Card />
+      <div id="features">
+        <PlatformFeatures />
+        <AdditionalFeatures />
+      </div>
     </>
   );
 }

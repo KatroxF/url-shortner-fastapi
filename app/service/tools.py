@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.schemas import models
+from datetime import datetime
 
 
 def get_total_clicks(url_id: int, db: Session):
@@ -115,3 +116,26 @@ def get_device_stats(url_id: int, db: Session):
         }
         for device_os, click_count in result
     ]
+
+def clicks_per_url(db:Session, start:datetime, end:datetime) ->dict[int,int]:
+    rows=(
+        db.query(models.Clicks.url_id,func.count(models.Clicks.id))
+        .filter(models.Clicks.timestamp>=start,models.Clicks.timestamp<end)
+        .group_by(models.Clicks.url_id)
+        .all()
+    )
+    return {url_id:count for url_id,count in rows}
+
+def top_value(db: Session, url_id: int, column, start: datetime, end: datetime) -> str:
+    row = (
+        db.query(column, func.count(models.Clicks.id).label("c"))
+        .filter(
+            models.Clicks.url_id == url_id,
+            models.Clicks.timestamp >= start,
+            models.Clicks.timestamp < end,
+        )
+        .group_by(column)
+        .order_by(func.count(models.Clicks.id).desc())
+        .first()
+    )
+    return row[0] if row and row[0] else "unknown"

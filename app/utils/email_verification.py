@@ -96,3 +96,20 @@ def send_reset_email(to_email: str, username: str, token: str) -> None:
             server.send_message(msg)
     except Exception:
         logger.exception("Failed to send reset email to %s", to_email)
+
+def send_email(to_email:str,subject:str,body:str) ->None:
+    if not SMTP_USER or not SMTP_PASSWORD:
+        print(f"[DEV] Email to {to_email}\nSubject: {subject}\n{body}")
+        return
+    msg=EmailMessage()
+    msg["Subject"]=subject
+    msg["From"]=f"Shortly <{SMTP_USER}"
+    msg["To"]=to_email
+    msg.set_content(body)
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+    except Exception:
+        logger.exception("Failed to send email to %s", to_email)
