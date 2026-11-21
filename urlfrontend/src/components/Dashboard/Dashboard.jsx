@@ -5,6 +5,7 @@ import Links from '../Links/Links';
 import Analytics from '../Analytics/Analytics';
 import Modal from '../Modal/Modal';
 import styles from './Dashboard.module.css';
+import { parseError } from "@/utils/parseError";
 import { API_URL } from "@/config";
 
 export default function Dashboard() {
@@ -22,33 +23,34 @@ export default function Dashboard() {
     setActivePage('analytics');
   };
 
- const handleShorten = async (longUrl, customCode) => {
-  try {
-    const token = localStorage.getItem("access_token");
+const handleShorten = async (longUrl, customCode) => {
+  const token = localStorage.getItem("access_token");
 
-    const res = await fetch(`${API_URL}/url`, {
+  let res;
+  try {
+    res = await fetch(`${API_URL}/url`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` })
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: JSON.stringify({
         original_url: longUrl,
-        custom_code: customCode
-      })
+        custom_code: customCode || null,
+      }),
     });
-
-    const data = await res.json();
-
-    // backend should return something like: { short_url: "lnk.ly/abc123" }
-
-    setShortUrl(data.short_url);
-    setShowModal(true);
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to shorten URL");
+  } catch {
+    throw new Error("Could not connect to the server");
   }
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(parseError(data)); // Home catches this and shows it
+  }
+
+  setShortUrl(data.short_url);
+  setShowModal(true);
 };
 
   const closeModal = () => {

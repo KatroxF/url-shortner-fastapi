@@ -176,3 +176,12 @@
     transition: none;
   }
 }
+.errorText {
+  color: #d93025;
+  font-size: 0.875rem;
+  margin: 6px 0 10px;
+}
+
+.inputError {
+  border: 1px solid #d93025;
+}

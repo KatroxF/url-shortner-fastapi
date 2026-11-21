@@ -12,74 +12,92 @@ export default function Home({ onShorten, onViewAnalytics }) {
     topLink: '—'
   });
   const [recentActivity, setRecentActivity] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch(`${API_URL}/urls`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
+  const fetchDashboardStats = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/urls`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
 
-        if (!response.ok) throw new Error('Failed to fetch dashboard stats');
+      if (!response.ok) throw new Error('Failed to fetch dashboard stats');
 
-        const urls = await response.json();
+      const urls = await response.json();
 
-        let topLink = null;
-        if (urls.length > 0) {
-          topLink = urls[0];
-          for (let i = 1; i < urls.length; i++) {
-            if (urls[i].click_count > topLink.click_count) {
-              topLink = urls[i];
-            }
+      let topLink = null;
+      if (urls.length > 0) {
+        topLink = urls[0];
+        for (let i = 1; i < urls.length; i++) {
+          if (urls[i].click_count > topLink.click_count) {
+            topLink = urls[i];
           }
         }
-
-        let totalClicks = 0;
-        for (const url of urls) {
-          totalClicks += url.click_count || 0;
-        }
-
-        setStats({
-          totalLinks: urls.length,
-          totalClicks: totalClicks,
-          topLink: topLink?.short_code || '—'
-        });
-      } catch {
-        setStats({ totalLinks: 0, totalClicks: 0, topLink: '—' });
       }
-    };
 
-    const fetchRecentActivity = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch(`${API_URL}/urls/recent`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-
-        if (!response.ok) throw new Error('Failed to fetch recent activity');
-
-        const data = await response.json();
-        setRecentActivity(data);
-      } catch (error) {
-        console.error(error);
-        setRecentActivity([]);
+      let totalClicks = 0;
+      for (const url of urls) {
+        totalClicks += url.click_count || 0;
       }
-    };
 
-    fetchDashboardStats();
-    fetchRecentActivity();
+      setStats({
+        totalLinks: urls.length,
+        totalClicks: totalClicks,
+        topLink: topLink?.short_code || '—'
+      });
+    } catch {
+      setStats({ totalLinks: 0, totalClicks: 0, topLink: '—' });
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/urls/recent`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch recent activity');
+
+      const data = await response.json();
+      setRecentActivity(data);
+    } catch (error) {
+      console.error(error);
+      setRecentActivity([]);
+    }
+  };
+
+  const loadDashboard = async () => {
+    await Promise.all([fetchDashboardStats(), fetchRecentActivity()]);
+  };
+
+  useEffect(() => {
+    loadDashboard();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (!longUrl.trim()) {
-      alert('Please enter a URL');
+      setError('Please enter a valid URL (e.g. https://example.com)');
       return;
     }
-    onShorten(longUrl, customCode);
-    setLongUrl('');
-    setCustomCode('');
+
+    setLoading(true);
+    try {
+      await onShorten(longUrl.trim(), customCode);
+      // Clear inputs only on success
+      setLongUrl('');
+      setCustomCode('');
+      // Refresh stats and recent activity with the new link
+      await loadDashboard();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopy = (shortCode, id) => {
@@ -104,9 +122,13 @@ export default function Home({ onShorten, onViewAnalytics }) {
               <label>Long URL</label>
               <input
                 type="text"
+                className={error ? styles.inputError : ''}
                 placeholder="https://your-very-long-url.com/goes/here"
                 value={longUrl}
-                onChange={(e) => setLongUrl(e.target.value)}
+                onChange={(e) => {
+                  setLongUrl(e.target.value);
+                  if (error) setError('');
+                }}
               />
             </div>
             <div className={`${styles.inputGroup} ${styles.customGroup}`}>
@@ -119,15 +141,18 @@ export default function Home({ onShorten, onViewAnalytics }) {
                 onChange={(e) => setCustomCode(e.target.value)}
               />
             </div>
-            <button type="submit" className={styles.btnPrimary}>
+            <button type="submit" className={styles.btnPrimary} disabled={loading}>
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
-              Shorten
+              {loading ? 'Shortening...' : 'Shorten'}
             </button>
           </div>
         </form>
+
+        {error && <div className={styles.errorText}>{error}</div>}
+
         <div className={styles.shortenHint}>
           Leave alias blank for an auto-generated code. Your link will be live instantly.
         </div>
@@ -162,7 +187,6 @@ export default function Home({ onShorten, onViewAnalytics }) {
               <div key={activity.id} className={styles.activityRow}>
                 <div className={styles.activityDot}></div>
 
-                
                 <a
                   className={styles.activityShort}
                   href={`${SHORT_BASE}/${activity.short}`}
@@ -173,7 +197,6 @@ export default function Home({ onShorten, onViewAnalytics }) {
                   {SHORT_BASE}/{activity.short}
                 </a>
 
-                
                 <span
                   className={styles.activityLong}
                   title={`${activity.long} — click to view analytics`}
@@ -186,7 +209,6 @@ export default function Home({ onShorten, onViewAnalytics }) {
                   {activity.clicks} clicks · {activity.created}
                 </span>
 
-                
                 <button
                   className={styles.copyBtn}
                   onClick={() => handleCopy(activity.short, activity.id)}

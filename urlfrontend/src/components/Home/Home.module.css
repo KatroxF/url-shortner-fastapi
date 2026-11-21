@@ -268,3 +268,12 @@
   color: #555a72;
   font-size: 13px;
 }
+.errorText {
+  color: #d93025;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.inputError {
+  border-color: #d93025 !important;
+}
